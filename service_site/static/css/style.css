@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Vazirmatn', sans-serif;
+    background: #0a0a0a;
+    color: #bdbdbd;
+    line-height: 1.6;
+}
+
+.navbar {
+    background: rgba(10, 10, 10, 0.95) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.hero {
+    background: linear-gradient(135deg, #4c1d0f 0%, #1a1a1a 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('../Images/logo-hero.png') center/contain no-repeat;
+    opacity: 0.12;
+    z-index: 1;
+}
+
+.glass {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+}
+
+.service-card, .portfolio-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.service-card:hover, .portfolio-card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #b91c1c, #dc2626);
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-danger:hover {
+    transform: scale(1.05);
+}
