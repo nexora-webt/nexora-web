@@ -1,5 +1,8 @@
 {% extends "base.html" %}
-{% load static %}
+
+{% block title %}
+ورود
+{% endblock %}
 
 {% block content %}
 
@@ -9,13 +12,13 @@
 
 <div class="col-lg-6">
 
-<div class="glass p-5">
+<div class="card shadow p-4">
 
-<h2 class="mb-4 text-center">
+<h3 class="mb-4 text-center">
 
-ثبت نام
+ورود
 
-</h2>
+</h3>
 
 <form method="post">
 
@@ -23,9 +26,9 @@
 
 {{ form.as_p }}
 
-<button class="btn btn-danger w-100">
+<button class="btn btn-success w-100">
 
-ثبت نام
+ورود
 
 </button>
 

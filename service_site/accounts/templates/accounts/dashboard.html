@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}
+داشبورد
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+<h2 class="mb-5">
+
+داشبورد من
+
+</h2>
+
+<div class="row mb-4">
+
+<div class="col-md-3">
+
+<div class="card shadow text-center">
+
+<div class="card-body">
+
+<h5>{{ orders_count }}</h5>
+
+<p>کل سفارش‌ها</p>
+
+</div>
+
+</div>
+
+</div>
+
+{% if is_manager %}
+
+<div class="alert alert-primary mb-4">
+
+<strong>
+
+پنل مدیریت شرکت
+
+</strong>
+
+<br>
+
+شما به امکانات مدیریتی Nexora دسترسی دارید.
+
+</div>
+
+{% endif %}
+
+<div class="col-md-3">
+
+<div class="card shadow text-center">
+
+<div class="card-body">
+
+<h5>{{ pending }}</h5>
+
+<p>در انتظار</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card shadow text-center">
+
+<div class="card-body">
+
+<h5>{{ processing }}</h5>
+
+<p>در حال انجام</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card shadow text-center">
+
+<div class="card-body">
+
+<h5>{{ completed }}</h5>
+
+<p>تحویل شده</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card shadow mb-4">
+
+<div class="card-header">
+
+آخرین اعلان‌ها
+
+</div>
+
+<div class="card-body">
+
+{% for notification in notifications %}
+
+<div class="border-bottom pb-2 mb-2">
+
+<h6>
+
+{{ notification.title }}
+
+</h6>
+
+<p class="mb-1">
+
+{{ notification.message }}
+
+</p>
+
+<small class="text-muted">
+
+{{ notification.created_at|date:"Y/m/d H:i" }}
+
+</small>
+
+</div>
+
+{% empty %}
+
+<p>
+
+اعلانی وجود ندارد.
+
+</p>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<table class="table align-middle">
+
+<thead>
+
+<tr>
+
+<th>کد رهگیری</th>
+
+<th>خدمت</th>
+
+<th>وضعیت</th>
+
+<th>قیمت</th>
+
+<th>تاریخ</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for order in orders %}
+
+<tr>
+
+<td><a href="{% url 'order_detail' order.tracking_code %}">{{ order.tracking_code }}</a></td>
+
+<td>{{ order.service }}</td>
+
+<td>{{ order.get_status_display }}</td>
+
+<td>{{ order.estimated_price }}</td>
+
+<td>{{ order.created_at|date:"Y/m/d" }}</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="5">
+
+هنوز سفارشی ثبت نشده است.
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

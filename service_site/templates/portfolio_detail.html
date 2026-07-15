@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row">
+
+        <div class="col-lg-7">
+
+            <img
+                src="{{ project.image.url }}"
+                class="img-fluid rounded shadow">
+
+        </div>
+
+        <div class="col-lg-5">
+
+            <h1>
+
+                {{ project.title }}
+
+            </h1>
+
+            <hr>
+
+            <p>
+
+                {{ project.description }}
+
+            </p>
+
+            <p>
+
+                <strong>
+
+                    مشتری:
+
+                </strong>
+
+                {{ project.client }}
+
+            </p>
+
+            <p>
+
+                <strong>
+
+                    تکنولوژی:
+
+                </strong>
+
+                {{ project.technologies }}
+
+            </p>
+
+            {% if project.link %}
+
+            <a
+
+                href="{{ project.link }}"
+
+                target="_blank"
+
+                class="btn btn-danger">
+
+                مشاهده پروژه
+
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <hr class="my-5">
+
+    <h3>
+
+        پروژه‌های مشابه
+
+    </h3>
+
+    <div class="row">
+
+        {% for item in related_projects %}
+
+        <div class="col-md-4">
+
+            <div class="card bg-dark text-white">
+
+                <img
+
+                    src="{{ item.image.url }}"
+
+                    class="card-img-top">
+
+                <div class="card-body">
+
+                    <h5>
+
+                        {{ item.title }}
+
+                    </h5>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

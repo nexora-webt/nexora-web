@@ -1,222 +1,1948 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexora | طراحی سایت و گرافیک</title>
-  <meta name="description" content="طراحی سایت، فروشگاه اینترنتی، طراحی لوگو، طراحی گرافیک و توسعه وب توسط Nexora">
+{% extends "base.html" %}
+{% load static %}
 
-<meta name="keywords" content="طراحی سایت, فروشگاه اینترنتی, لوگو, برنامه نویسی, طراحی گرافیک">
+{% block title %}
+Nexora Web | طراحی سایت
+{% endblock %}
 
-<meta name="author" content="Nexora">
+{% block description %}
+طراحی سایت، فروشگاه اینترنتی، طراحی لوگو، طراحی گرافیک، برندینگ و توسعه وب توسط Nexora Web
+{% endblock %}
 
-  {% load static %}
-  
-  <!-- Favicon -->
-  <link rel="shortcut icon" href="{% static 'images/logo.png' %}" type="image/png">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
+{% block extra_css %}
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="{% static 'images/logo.png' %}" alt="Nexora" style="height: 55px;">
-        <span class="fs-4 ms-3 fw-bold">Nexora</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="#services">خدمات</a></li>
-          <li class="nav-item"><a class="nav-link" href="#portfolio">نمونه کارها</a></li>
-          <li class="nav-item"><a class="nav-link" href="#order">سفارش</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">درباره ما</a></li>
-        </ul>
-      </div>
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+
+{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+
+<div class="container mt-4">
+
+    {% for message in messages %}
+
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm">
+
+        {{ message }}
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert">
+        </button>
+
     </div>
-  </nav>
 
-  {% if messages %}
+    {% endfor %}
 
-  <div class="container mt-4">
+</div>
 
-  {% for message in messages %}
+{% endif %}
 
-  <div class="alert alert-success alert-dismissible fade show">
+<!-- ========================= -->
+<!-- Hero Section -->
+<!-- ========================= -->
 
-  {{ message }}
+<section class="hero position-relative overflow-hidden">
 
-  <button
-  type="button"
-  class="btn-close"
-  data-bs-dismiss="alert">
-  </button>
-
-  </div>
-
-  {% endfor %}
-
-  </div>
-
-  {% endif %}
-
-  <!-- Hero -->
-  <section class="hero text-center" style="padding-top: 110px; background: linear-gradient(135deg, #4c1d0f, #1a1a1a); min-height: 85vh; display: flex; align-items: center;">
     <div class="container">
-      <h1 class="display-1 fw-bold text-white mb-4">Nexora</h1>
-      <p class="lead fs-2 text-white mb-5">طراحی سایت • گرافیک • برندینگ حرفه‌ای</p>
-      <a href="#order" class="btn btn-danger btn-lg px-5 py-3 fs-5">شروع همکاری</a>
-    </div>
-  </section>
 
-  <!-- خدمات -->
-  <section id="services" class="py-5 bg-light">
-    <div class="container">
-      <h2 class="text-center mb-5 display-5 fw-bold">خدمات ما</h2>
-      <div class="row g-4">
-        {% for service in services %}
-        <div class="col-lg-4 col-md-6">
-          <div class="service-card card h-100 p-4 text-center shadow">
-            {% if service.icon %}<i class="{{ service.icon }} fa-4x text-danger mb-4"></i>{% endif %}
-            <h5 class="fw-bold">{{ service.title }}</h5>
-            <p class="text-muted">{{ service.description }}</p>
-            <strong class="text-success fs-5">از {{ service.base_price|floatformat:0 }} تومان</strong>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-  </section>
+        <div class="row align-items-center min-vh-100">
 
-  <!-- نمونه کارها -->
-  <section id="portfolio" class="py-5 bg-dark text-white">
-    <div class="container">
-      <h2 class="text-center mb-5 display-5 fw-bold">نمونه کارها</h2>
-      <div class="row g-4">
-        {% for project in portfolios %}
-        <div class="col-lg-4 col-md-6">
-          <a href="{{ project.link|default:'#' }}" target="_blank" class="text-decoration-none">
-            <div class="card h-100 shadow portfolio-card">
-              {% if project.image %}
-                <img src="{{ project.image.url }}" class="card-img-top" style="height: 260px; object-fit: cover;" alt="{{ project.title }}">
-              {% endif %}
-              <div class="card-body">
-                <h5 class="fw-bold text-white">{{ project.title }}</h5>
-                <p class="text-light-emphasis">{{ project.description|truncatechars:120 }}</p>
-                {% if project.link %}
-                  <span class="btn btn-outline-light btn-sm mt-2">مشاهده پروژه →</span>
-                {% endif %}
-              </div>
+            <div class="col-lg-6"
+                 data-aos="fade-left">
+
+                <span class="badge bg-danger mb-3 px-3 py-2">
+
+                    Digital Agency
+
+                </span>
+
+                <h1 class="display-1 fw-bold text-white mb-4">
+                Nexora Web
+                </h1>
+
+                <p class="lead fs-2 text-white mb-5">
+                طراحی سایت • فروشگاه اینترنتی • وب اپلیکیشن • UI/UX
+                </p>
+
+                <div class="d-flex flex-wrap gap-3">
+
+                    <a href="#order"
+                       class="btn btn-danger btn-lg px-5">
+
+                        ثبت سفارش
+
+                    </a>
+
+                    <a href="#portfolio"
+                       class="btn btn-outline-light btn-lg px-5">
+
+                        نمونه کارها
+
+                    </a>
+
+                </div>
+
+                <div class="row mt-5 g-4">
+
+                    <div class="col-4">
+
+                        <h2 class="fw-bold text-danger">
+
+                            +250
+
+                        </h2>
+
+                        <small class="text-light">
+
+                            پروژه انجام شده
+
+                        </small>
+
+                    </div>
+
+                    <div class="col-4">
+
+                        <h2 class="fw-bold text-danger">
+
+                            +120
+
+                        </h2>
+
+                        <small class="text-light">
+
+                            مشتری فعال
+
+                        </small>
+
+                    </div>
+
+                    <div class="col-4">
+
+                        <h2 class="fw-bold text-danger">
+
+                            98%
+
+                        </h2>
+
+                        <small class="text-light">
+
+                            رضایت مشتری
+
+                        </small>
+
+                    </div>
+
+                </div>
+
             </div>
-          </a>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-  </section>
 
-  <!-- فرم سفارش -->
-  <section id="order" class="py-5">
-    <div class="container">
-      <h2 class="text-center mb-5 display-5 fw-bold">ثبت سفارش + تخمین هوشمند قیمت</h2>
+            <div class="col-lg-6 text-center"
+                 data-aos="fade-right">
+
+                <img
+
+                    src="{% static 'img/logo-web.png' %}"
+
+                    class="img-fluid"
+
+                    style="max-width:420px;"
+
+                    alt="Nexora"
+
+                >
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ========================= -->
+<!-- Services -->
+<!-- ========================= -->
+
+<section
+id="services"
+class="py-5">
+
+<div class="container">
+
+<div class="text-center mb-5">
+
+<h2 class="display-5 fw-bold">
+
+خدمات ما
+
+</h2>
+
+<p class="text-muted">
+
+تمام خدمات مورد نیاز کسب‌وکار شما
+در یک مجموعه حرفه‌ای
+
+</p>
+
+</div>
+
+<div class="row g-4">
+
+{% for service in services %}
+
+<div
+class="col-lg-4 col-md-6"
+data-aos="zoom-in">
+
+<div class="card service-card h-100 border-0 shadow">
+
+<div class="card-body p-4 text-center">
+
+{% if service.icon %}
+
+<i
+class="{{ service.icon }} fa-4x text-danger mb-4">
+
+</i>
+
+{% endif %}
+
+<h4 class="fw-bold mb-3">
+
+{{ service.title }}
+
+</h4>
+
+<p class="text-muted">
+
+{{ service.description }}
+
+</p>
+
+<div class="mt-4">
+
+<span class="badge bg-success fs-6 px-3 py-2">
+
+از
+
+{{ service.base_price|floatformat:0 }}
+
+تومان
+
+</span>
+
+</div>
+
+<div class="mt-4">
+
+<a
+
+href="{% url 'core:service_detail' service.slug %}"
+
+class="btn btn-outline-danger">
+
+مشاهده جزئیات
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ========================= -->
+<!-- Portfolio -->
+<!-- ========================= -->
+
+<section
+id="portfolio"
+class="py-5 bg-dark text-white">
+
+<div class="container">
+
+<div class="text-center mb-5">
+
+<span class="badge bg-danger mb-3">
+
+Portfolio
+
+</span>
+
+<h2 class="display-5 fw-bold">
+
+نمونه کارهای اخیر
+
+</h2>
+
+<p class="text-light">
+
+برخی از پروژه‌هایی که توسط تیم Nexora Web اجرا شده‌اند.
+
+</p>
+
+</div>
+
+<div class="row g-4">
+
+{% for project in portfolios %}
+
+<div
+class="col-lg-4 col-md-6"
+data-aos="fade-up">
+
+<div class="card portfolio-card h-100 bg-black border-secondary shadow-lg">
+
+{% if project.image %}
+
+<img
+src="{{ project.image.url }}"
+class="card-img-top"
+style="height:260px;object-fit:cover;"
+alt="{{ project.title }}">
+
+{% else %}
+
+<img
+src="{% static 'img/default-project.jpg' %}"
+class="card-img-top"
+style="height:260px;object-fit:cover;"
+alt="Project">
+
+{% endif %}
+
+<div class="card-body">
+
+<h4 class="fw-bold text-white">
+
+{{ project.title }}
+
+</h4>
+
+<p class="text-secondary">
+
+{{ project.description|truncatechars:120 }}
+
+</p>
+
+{% if project.service %}
+
+<span class="badge bg-danger">
+
+{{ project.service.title }}
+
+</span>
+
+{% endif %}
+
+<div class="mt-4">
+
+<a
+href="{% url 'core:portfolio_detail' project.slug %}"
+class="btn btn-outline-light w-100">
+
+مشاهده پروژه
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% empty %}
+
+<div class="col-12">
+
+<div class="alert alert-secondary text-center">
+
+در حال حاضر نمونه کاری ثبت نشده است.
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ========================= -->
+<!-- Why Nexora Web -->
+<!-- ========================= -->
+
+<section
+class="py-5">
+
+<div class="container">
+
+<div class="text-center mb-5">
+
+<h2 class="display-5 fw-bold">
+
+چرا Nexora web؟
+
+</h2>
+
+<p class="text-muted">
+
+دلایلی که مشتریان ما را انتخاب می‌کنند.
+
+</p>
+
+</div>
+
+<div class="row g-4">
+
+<div class="col-lg-3 col-md-6">
+
+<div class="glass p-4 h-100 text-center">
+
+<div class="display-3 mb-3">
+
+⚡
+
+</div>
+
+<h5 class="fw-bold">
+
+سرعت بالا
+
+</h5>
+
+<p>
+
+اجرای پروژه‌ها با برنامه‌ریزی دقیق و تحویل به‌موقع.
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<div class="glass p-4 h-100 text-center">
+
+<div class="display-3 mb-3">
+
+🎯
+
+</div>
+
+<h5 class="fw-bold">
+
+کیفیت حرفه‌ای
+
+</h5>
+
+<p>
+
+استفاده از استانداردهای روز دنیا در طراحی و توسعه.
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<div class="glass p-4 h-100 text-center">
+
+<div class="display-3 mb-3">
+
+🛡️
+
+</div>
+
+<h5 class="fw-bold">
+
+پشتیبانی
+
+</h5>
+
+<p>
+
+همراهی کامل حتی بعد از تحویل پروژه.
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<div class="glass p-4 h-100 text-center">
+
+<div class="display-3 mb-3">
+
+🚀
+
+</div>
+
+<h5 class="fw-bold">
+
+رشد کسب‌وکار
+
+</h5>
+
+<p>
+
+هدف ما افزایش فروش و اعتبار برند شماست.
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Order Section -->
+<!-- ====================================== -->
+
+<section
+id="order"
+class="py-5 bg-light">
+
+<div class="container">
+
+<div class="text-center mb-5">
+
+<h2 class="display-5 fw-bold">
+
+ثبت سفارش پروژه
+
+</h2>
+
+<p class="text-muted">
+
+اطلاعات پروژه خود را ثبت کنید تا هزینه و زمان اجرای تقریبی محاسبه شود.
+
+</p>
+
+</div>
 
 <div class="row justify-content-center">
-        <div class="col-lg-8">
-          <div class="card p-5 shadow">
-            <form method="post">
-              {% csrf_token %}
-              <div class="row g-4">
-                <div class="col-md-6">{{ form.name }}</div>
-                <div class="col-md-6">{{ form.phone }}</div>
-                <div class="col-12">{{ form.email }}</div>
-                <div class="col-12">{{ form.service }}</div>
-                <div class="col-12">{{ form.description }}</div>
-              </div>
-              <button type="submit" class="btn btn-danger btn-lg w-100 mt-4 py-3">محاسبه قیمت و ارسال سفارش</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-    <!-- درباره ما -->
-  <section id="about" class="py-5 bg-light">
-    <div class="container">
-      <div class="text-center mb-5">
-        <h2 class="display-5 fw-bold">درباره ما</h2>
-      </div>
+<div class="col-xl-8 col-lg-9">
 
-      <div class="row justify-content-center">
-        <div class="col-lg-10">
-          <p class="lead text-center text-secondary">
-            Donsions Grand مجموعه‌ای فعال در زمینه توسعه وب، طراحی دیجیتال و ارائه راهکارهای نوین برای کسب‌وکارها است. ما ایده‌ها را به وب‌سایت‌ها، برندها و محصولات دیجیتالی تبدیل می‌کنیم که علاوه بر ظاهر حرفه‌ای، از عملکرد سریع، ساختار استاندارد و قابلیت توسعه برخوردار باشند.
-          </p>
+<div class="card border-0 shadow-lg">
 
-          <p class="lead text-center text-secondary">
-            تمرکز ما تنها بر طراحی نیست؛ بلکه ایجاد بستری مطمئن برای رشد و حضور مؤثر کسب‌وکارها در فضای دیجیتال است. از طراحی وب‌سایت‌های شرکتی و فروشگاهی گرفته تا طراحی هویت بصری، لوگو، بنرهای تبلیغاتی و راهکارهای اختصاصی، هر پروژه با دقت، شفافیت و توجه به جزئیات اجرا می‌شود.
-          </p>
+<div class="card-body p-5">
 
-          <p class="lead text-center text-secondary">
-            ما معتقدیم اعتماد از طریق کیفیت، صداقت و نتیجه‌گیری واقعی به دست می‌آید. به همین دلیل تمامی خدمات با قیمت‌گذاری شفاف، فرآیند مشخص و امکان مشاهده نمونه‌کارها ارائه می‌شوند تا مشتریان با اطمینان کامل تصمیم‌گیری کنند.
-          </p>
+<form
+method="post"
+enctype="multipart/form-data">
 
-          <p class="lead text-center text-secondary">
-            اگر به دنبال یک همکاری حرفه‌ای برای توسعه یا ارتقای حضور دیجیتال کسب‌وکار خود هستید، Nexora آماده است تا این مسیر را در کنار شما آغاز کند.
-          </p>
+{% csrf_token %}
 
-          <div class="text-center mt-4 fs-3">
-            🇮🇷 🇬🇧 🇩🇪 🇫🇷 🇨🇳 🇷🇺
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+<div class="row g-4">
 
-  <!-- فوتر -->
-  <footer class="bg-dark text-white py-5">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-6">
-          <h5>Nexora</h5>
-          <p>
-            مجموعه‌ای فعال در زمینه طراحی و توسعه وب، طراحی گرافیک و راهکارهای دیجیتال.
-            هدف ما ارائه خدمات حرفه‌ای، شفاف و قابل اعتماد برای رشد کسب‌وکارها در فضای آنلاین است.
-          </p>
+<div class="col-md-6">
 
-          <div class="mt-3 folead ter-conteri text-se">
-            🌍 خدمات برای مشتریان داخلی و بین‌المللی
-            🇮🇷 🇬🇧 🇩🇪 🇨🇳
-          </div>
-        </div>
-        <div class="col-md-3">
-          <h6>ارتباط با ما</h6>
-          <p>تلفن:<a href="tel:+989330616352">09330616352</a></p>
-          <p>ایمیل:<a href="mailto:a45349547@gmail.com">a45349547@gmail.com</a></p>
-        </div>
-        <div class="col-md-3">
-          <h6>شبکه‌های اجتماعی</h6>
-          <a href="https://www.instagram.com/donsions.grand?igsh=a2xqNnM0OTNnYWI1" class="text-white me-3"><i class="fab fa-instagram fa-2x"></i></a>
-          <a href="https://t.me/DonsionsGrand" class="text-white"><i class="fab fa-telegram fa-2x"></i></a>
-        </div>
-      </div>
-      <hr>
-      <div class="text-center">
-        © 2026 Nexora - تمامی حقوق محفوظ است.
-      </div>
-    </div>
-  </footer>
+<label class="form-label fw-bold">
 
-  <script>AOS.init();</script>
-  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-  <script src="{% static 'js/script.js' %}"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+نام و نام خانوادگی
+
+</label>
+
+{{ form.full_name }}
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label fw-bold">
+
+شماره تماس
+
+</label>
+
+{{ form.phone }}
+
+</div>
+
+<div class="col-12">
+
+<label class="form-label fw-bold">
+
+ایمیل
+
+</label>
+
+{{ form.email }}
+
+</div>
+
+<div class="col-12">
+
+<label class="form-label fw-bold">
+
+نوع خدمت
+
+</label>
+
+{{ form.service }}
+
+</div>
+
+<div class="col-12">
+
+<label class="form-label fw-bold">
+
+توضیحات پروژه
+
+</label>
+
+{{ form.description }}
+
+</div>
+
+{% if form.file %}
+
+<div class="col-12">
+
+<label class="form-label fw-bold">
+
+فایل پروژه
+
+</label>
+
+<div id="drop-area">
+
+<div class="upload-icon">
+
+📂
+
+</div>
+
+<p class="mb-2">
+
+فایل را اینجا رها کنید یا کلیک کنید.
+
+</p>
+
+{{ form.file }}
+
+<p
+id="file-name"
+class="mt-3 text-danger">
+
+هیچ فایلی انتخاب نشده
+
+</p>
+
+</div>
+
+</div>
+
+{% endif %}
+
+<div class="col-12 mt-4">
+
+<button
+type="submit"
+class="btn btn-danger btn-lg w-100 py-3">
+
+ثبت سفارش
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Pricing Banner -->
+<!-- ====================================== -->
+
+<section class="py-5 bg-dark text-white">
+
+<div class="container">
+
+<div class="row align-items-center">
+
+<div class="col-lg-8">
+
+<h2 class="fw-bold mb-3">
+
+قیمت‌گذاری هوشمند
+
+</h2>
+
+<p class="lead text-light">
+
+سیستم Nexora Web با توجه به نوع پروژه، امکانات درخواستی و توضیحات شما،
+هزینه تقریبی و زمان اجرای پروژه را به صورت هوشمند محاسبه می‌کند.
+
+</p>
+
+</div>
+
+<div class="col-lg-4 text-center">
+
+<div class="glass p-4">
+
+<h1 class="display-3 text-danger fw-bold">
+
+AI
+
+</h1>
+
+<p class="mb-0">
+
+Smart Estimate
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- About Nexora Web -->
+<!-- ====================================== -->
+
+<section
+id="about"
+class="py-5">
+
+<div class="container">
+
+<div class="text-center mb-5">
+
+<span class="badge bg-danger mb-3">
+
+About Us
+
+</span>
+
+<h2 class="display-5 fw-bold">
+
+درباره Nexora Web
+
+</h2>
+
+<p class="text-muted">
+
+ما فقط وب‌سایت طراحی نمی‌کنیم؛
+ما برای برند شما هویت دیجیتال می‌سازیم.
+
+</p>
+
+</div>
+
+<div class="row align-items-center g-5">
+
+<div class="col-lg-6"
+data-aos="fade-left">
+
+<img
+src="{% static 'img/logo-web.png' %}"
+class="img-fluid"
+alt="Nexora">
+
+</div>
+
+<div class="col-lg-6"
+data-aos="fade-right">
+
+<p class="lead">
+
+Nexora Web شرکت تخصصی طراحی و توسعه وب و زیرمجموعه رسمی Nexora است. خدمات ما شامل طراحی سایت شرکتی، فروشگاه اینترنتی، وب‌اپلیکیشن، پنل اختصاصی و طراحی UI/UX می‌باشد.
+
+</p>
+
+<p>
+
+هدف ما ارائه راهکارهایی است که علاوه بر ظاهر حرفه‌ای،
+باعث رشد واقعی کسب‌وکار مشتریان شود.
+
+</p>
+
+<p>
+
+در تمامی پروژه‌ها از جدیدترین تکنولوژی‌های طراحی و برنامه‌نویسی
+استفاده می‌کنیم تا محصول نهایی سریع، امن و قابل توسعه باشد.
+
+</p>
+
+<div class="row mt-4">
+
+<div class="col-6 mb-3">
+
+<div class="glass p-3 text-center">
+
+<h3 class="text-danger fw-bold">
+
+24/7
+
+</h3>
+
+<p class="mb-0">
+
+پشتیبانی
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-6 mb-3">
+
+<div class="glass p-3 text-center">
+
+<h3 class="text-danger fw-bold">
+
+100%
+
+</h3>
+
+<p class="mb-0">
+
+شفافیت
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-6">
+
+<div class="glass p-3 text-center">
+
+<h3 class="text-danger fw-bold">
+
+Fast
+
+</h3>
+
+<p class="mb-0">
+
+تحویل سریع
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-6">
+
+<div class="glass p-3 text-center">
+
+<h3 class="text-danger fw-bold">
+
+Premium
+
+</h3>
+
+<p class="mb-0">
+
+کیفیت بالا
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Statistics -->
+<!-- ====================================== -->
+
+<section class="py-5 bg-danger text-white">
+
+<div class="container">
+
+<div class="row text-center g-4">
+
+<div class="col-lg-3 col-md-6">
+
+<h1 class="display-4 fw-bold">
+
+250+
+
+</h1>
+
+<p>
+
+پروژه موفق
+
+</p>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<h1 class="display-4 fw-bold">
+
+120+
+
+</h1>
+
+<p>
+
+مشتری دائمی
+
+</p>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<h1 class="display-4 fw-bold">
+
+98%
+
+</h1>
+
+<p>
+
+رضایت مشتری
+
+</p>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<h1 class="display-4 fw-bold">
+
+5★
+
+</h1>
+
+<p>
+
+امتیاز خدمات
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Contact Section -->
+<!-- ====================================== -->
+
+<section
+id="contact"
+class="py-5 bg-light">
+
+<div class="container">
+
+<div class="text-center mb-5">
+
+<span class="badge bg-danger mb-3">
+
+Contact
+
+</span>
+
+<h2 class="display-5 fw-bold">
+
+تماس با ما
+
+</h2>
+
+<p class="text-muted">
+
+اگر سؤال، پیشنهاد یا درخواست همکاری دارید، فرم زیر را تکمیل کنید.
+
+</p>
+
+</div>
+
+<div class="row justify-content-center">
+
+<div class="col-lg-8">
+
+<div class="card border-0 shadow-lg">
+
+<div class="card-body p-5">
+
+<form method="post">
+
+{% csrf_token %}
+
+<input
+type="hidden"
+name="contact_submit"
+value="1">
+
+<div class="row g-4">
+
+<div class="col-md-6">
+
+<label class="form-label fw-bold">
+
+نام
+
+</label>
+
+{{ contact_form.full_name }}
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label fw-bold">
+
+ایمیل
+
+</label>
+
+{{ contact_form.email }}
+
+</div>
+
+<div class="col-12">
+
+<label class="form-label fw-bold">
+
+موضوع
+
+</label>
+
+{{ contact_form.subject }}
+
+</div>
+
+<div class="col-12">
+
+<label class="form-label fw-bold">
+
+پیام
+
+</label>
+
+{{ contact_form.message }}
+
+</div>
+
+<div class="col-12 mt-3">
+
+<button
+type="submit"
+class="btn btn-danger btn-lg w-100">
+
+ارسال پیام
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- FAQ -->
+<!-- ====================================== -->
+
+<section
+class="py-5">
+
+<div class="container">
+
+<div class="text-center mb-5">
+
+<h2 class="display-5 fw-bold">
+
+سؤالات متداول
+
+</h2>
+
+</div>
+
+<div
+class="accordion"
+id="faqAccordion">
+
+<div class="accordion-item">
+
+<h2 class="accordion-header">
+
+<button
+class="accordion-button"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#faq1">
+
+مدت زمان طراحی سایت چقدر است؟
+
+</button>
+
+</h2>
+
+<div
+id="faq1"
+class="accordion-collapse collapse show"
+data-bs-parent="#faqAccordion">
+
+<div class="accordion-body">
+
+بسته به نوع پروژه بین ۵ تا ۳۰ روز کاری.
+
+</div>
+
+</div>
+
+</div>
+
+<div class="accordion-item">
+
+<h2 class="accordion-header">
+
+<button
+class="accordion-button collapsed"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#faq2">
+
+آیا پشتیبانی هم ارائه می‌شود؟
+
+</button>
+
+</h2>
+
+<div
+id="faq2"
+class="accordion-collapse collapse"
+data-bs-parent="#faqAccordion">
+
+<div class="accordion-body">
+
+بله، تمامی پروژه‌ها دارای پشتیبانی هستند.
+
+</div>
+
+</div>
+
+</div>
+
+<div class="accordion-item">
+
+<h2 class="accordion-header">
+
+<button
+class="accordion-button collapsed"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#faq3">
+
+هزینه پروژه چگونه محاسبه می‌شود؟
+
+</button>
+
+</h2>
+
+<div
+id="faq3"
+class="accordion-collapse collapse"
+data-bs-parent="#faqAccordion">
+
+<div class="accordion-body">
+
+با توجه به امکانات، حجم پروژه و نیازهای شما به صورت هوشمند محاسبه می‌شود.
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Call To Action -->
+<!-- ====================================== -->
+
+<section class="py-5 bg-dark text-white">
+
+<div class="container">
+
+<div class="row align-items-center">
+
+<div class="col-lg-8">
+
+<span class="badge bg-danger mb-3">
+
+Start Today
+
+</span>
+
+<h2 class="display-4 fw-bold mb-4">
+
+آماده شروع پروژه هستید؟
+
+</h2>
+
+<p class="lead text-light">
+
+اگر می‌خواهید کسب‌وکار خود را حرفه‌ای‌تر معرفی کنید،
+همین حالا سفارش خود را ثبت کنید تا تیم Nexora web در سریع‌ترین
+زمان با شما ارتباط بگیرد.
+
+</p>
+
+<div class="d-flex flex-wrap gap-3 mt-4">
+
+<a
+href="#order"
+class="btn btn-danger btn-lg px-5">
+
+ثبت سفارش
+
+</a>
+
+<a
+href="{% url 'core:tracking' %}"
+class="btn btn-outline-light btn-lg px-5">
+
+رهگیری سفارش
+
+</a>
+
+</div>
+
+</div>
+
+<div class="col-lg-4 text-center">
+
+<img
+
+src="{% static 'img/logo-web.png' %}"
+
+class="img-fluid"
+
+style="max-width:260px;"
+
+alt="Nexora web">
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Technologies -->
+<!-- ====================================== -->
+
+<section class="py-5">
+
+<div class="container">
+
+<div class="text-center mb-5">
+
+<h2 class="display-5 fw-bold">
+
+تکنولوژی‌های مورد استفاده
+
+</h2>
+
+<p class="text-muted">
+
+ما از جدیدترین ابزارهای توسعه استفاده می‌کنیم.
+
+</p>
+
+</div>
+
+<div class="row text-center g-4">
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<h4 class="fw-bold">
+
+Python
+
+</h4>
+
+</div>
+
+</div>
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<h4 class="fw-bold">
+
+Django
+
+</h4>
+
+</div>
+
+</div>
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<h4 class="fw-bold">
+
+Bootstrap
+
+</h4>
+
+</div>
+
+</div>
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<h4 class="fw-bold">
+
+JavaScript
+
+</h4>
+
+</div>
+
+</div>
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<h4 class="fw-bold">
+
+HTML5
+
+</h4>
+
+</div>
+
+</div>
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<h4 class="fw-bold">
+
+CSS3
+
+</h4>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Social -->
+<!-- ====================================== -->
+
+<section class="py-5 bg-light">
+
+<div class="container">
+
+<div class="text-center">
+
+<h2 class="fw-bold mb-4">
+
+ما را دنبال کنید
+
+</h2>
+
+<p class="text-muted mb-5">
+
+جدیدترین پروژه‌ها و آموزش‌ها را در شبکه‌های اجتماعی دنبال کنید.
+
+</p>
+
+<div class="d-flex justify-content-center flex-wrap gap-3">
+
+<a href="https://t.me/DonsionsGrand" class="btn btn-outline-dark px-4">
+
+Telegram
+
+</a>
+
+<a href="https://www.instagram.com/donsions.grand?igsh=a2xqNnM0OTNnYWI1" class="btn btn-outline-dark px-4">
+
+Instagram
+
+</a>
+
+<a href="#" class="btn btn-outline-dark px-4">
+
+LinkedIn
+
+</a>
+
+<a href="#" class="btn btn-outline-dark px-4">
+
+GitHub
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Process -->
+<!-- ====================================== -->
+
+<section class="py-5">
+
+<div class="container">
+
+<div class="text-center mb-5">
+
+<span class="badge bg-danger mb-3">
+
+Workflow
+
+</span>
+
+<h2 class="display-5 fw-bold">
+
+روند همکاری با Nexora web
+
+</h2>
+
+<p class="text-muted">
+
+از ثبت سفارش تا تحویل نهایی پروژه
+
+</p>
+
+</div>
+
+<div class="row g-4">
+
+<div class="col-lg-3 col-md-6">
+
+<div class="card border-0 shadow h-100 text-center p-4">
+
+<div class="display-4 text-danger mb-3">
+
+①
+
+</div>
+
+<h4 class="fw-bold">
+
+ثبت سفارش
+
+</h4>
+
+<p class="text-muted">
+
+اطلاعات پروژه را ثبت می‌کنید.
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<div class="card border-0 shadow h-100 text-center p-4">
+
+<div class="display-4 text-danger mb-3">
+
+②
+
+</div>
+
+<h4 class="fw-bold">
+
+بررسی پروژه
+
+</h4>
+
+<p class="text-muted">
+
+تیم ما پروژه را بررسی و قیمت‌گذاری می‌کند.
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<div class="card border-0 shadow h-100 text-center p-4">
+
+<div class="display-4 text-danger mb-3">
+
+③
+
+</div>
+
+<h4 class="fw-bold">
+
+شروع اجرا
+
+</h4>
+
+<p class="text-muted">
+
+پس از تأیید شما، پروژه آغاز می‌شود.
+
+</p>
+
+</div>
+
+</div>
+
+<div class="col-lg-3 col-md-6">
+
+<div class="card border-0 shadow h-100 text-center p-4">
+
+<div class="display-4 text-danger mb-3">
+
+④
+
+</div>
+
+<h4 class="fw-bold">
+
+تحویل پروژه
+
+</h4>
+
+<p class="text-muted">
+
+همراه با پشتیبانی و آموزش کامل.
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Testimonials -->
+<!-- ====================================== -->
+
+<section class="py-5 bg-dark text-white">
+
+<div class="container">
+
+<div class="text-center mb-5">
+
+<h2 class="display-5 fw-bold">
+
+نظر مشتریان
+
+</h2>
+
+</div>
+
+<div class="row g-4">
+
+<div class="col-lg-4">
+
+<div class="glass p-4 h-100">
+
+★★★★★
+
+<p class="mt-3">
+
+همه چیز دقیق و حرفه‌ای انجام شد.
+از کیفیت کار کاملاً راضی هستیم.
+
+</p>
+
+<strong>
+
+شرکت آریا
+
+</strong>
+
+</div>
+
+</div>
+
+<div class="col-lg-4">
+
+<div class="glass p-4 h-100">
+
+★★★★★
+
+<p class="mt-3">
+
+سایت فروشگاهی ما دقیقاً همان چیزی شد
+که انتظار داشتیم.
+
+</p>
+
+<strong>
+
+فروشگاه آنلاین
+
+</strong>
+
+</div>
+
+</div>
+
+<div class="col-lg-4">
+
+<div class="glass p-4 h-100">
+
+★★★★★
+
+<p class="mt-3">
+
+پشتیبانی بسیار عالی و تحویل پروژه
+زودتر از زمان اعلام شده.
+
+</p>
+
+<strong>
+
+استارتاپ Nova
+
+</strong>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Newsletter -->
+<!-- ====================================== -->
+
+<section class="py-5">
+
+<div class="container">
+
+<div class="card border-0 shadow-lg">
+
+<div class="card-body p-5 text-center">
+
+<h2 class="fw-bold mb-3">
+
+عضویت در خبرنامه
+
+</h2>
+
+<p class="text-muted mb-4">
+
+از جدیدترین خدمات و تخفیف‌های Nexora مطلع شوید.
+
+</p>
+
+<form class="row justify-content-center">
+
+<div class="col-lg-5 mb-3">
+
+<input
+
+type="email"
+
+class="form-control form-control-lg"
+
+placeholder="ایمیل شما">
+
+</div>
+
+<div class="col-lg-2 mb-3">
+
+<button
+
+class="btn btn-danger btn-lg w-100"
+
+type="submit">
+
+عضویت
+
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Footer CTA -->
+<!-- ====================================== -->
+
+<section class="py-5 bg-danger text-white">
+
+<div class="container">
+
+<div class="row align-items-center">
+
+<div class="col-lg-8">
+
+<h2 class="display-5 fw-bold mb-3">
+
+همین امروز پروژه خود را شروع کنید
+
+</h2>
+
+<p class="lead mb-0">
+
+تیم Nexora Web آماده است تا ایده شما را به یک محصول حرفه‌ای تبدیل کند.
+
+</p>
+
+</div>
+
+<div class="col-lg-4 text-center mt-4 mt-lg-0">
+
+<a
+href="#order"
+class="btn btn-light btn-lg px-5">
+
+سفارش طراحی سایت
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ====================================== -->
+<!-- Back To Top -->
+<!-- ====================================== -->
+
+<button
+id="backToTop"
+class="btn btn-danger shadow-lg"
+
+style="position:fixed;
+bottom:25px;
+left:25px;
+display:none;
+z-index:999;">
+
+↑
+
+</button>
+
+<!-- ====================================== -->
+<!-- Scripts -->
+<!-- ====================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+<script>
+
+AOS.init({
+
+duration:900,
+
+once:true,
+
+offset:80,
+
+});
+
+</script>
+
+<script src="{% static 'js/main.js' %}"></script>
+
+<script src="{% static 'js/script.js' %}"></script>
+
+<script>
+
+const backToTop=document.getElementById("backToTop");
+
+window.addEventListener("scroll",()=>{
+
+if(window.scrollY>350){
+
+backToTop.style.display="block";
+
+}else{
+
+backToTop.style.display="none";
+
+}
+
+});
+
+backToTop.addEventListener("click",()=>{
+
+window.scrollTo({
+
+top:0,
+
+behavior:"smooth"
+
+});
+
+});
+
+</script>
+
+<script>
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor=>{
+
+anchor.addEventListener("click",function(e){
+
+const target=document.querySelector(this.getAttribute("href"));
+
+if(target){
+
+e.preventDefault();
+
+target.scrollIntoView({
+
+behavior:"smooth",
+
+block:"start"
+
+});
+
+}
+
+});
+
+});
+
+</script>
+
+<script>
+
+setTimeout(()=>{
+
+document.querySelectorAll(".alert").forEach(alert=>{
+
+const bsAlert=bootstrap.Alert.getOrCreateInstance(alert);
+
+bsAlert.close();
+
+});
+
+},5000);
+
+</script>
+
+{% endblock %}

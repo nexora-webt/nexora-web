@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+پروفایل
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+<div class="row justify-content-center">
+
+<div class="col-lg-8">
+
+<div class="card shadow p-4">
+
+<h3 class="mb-4">
+
+پروفایل من
+
+</h3>
+
+<form method="post" enctype="multipart/form-data">
+
+{% csrf_token %}
+
+{{ form.as_p }}
+
+<button class="btn btn-primary">
+
+ذخیره تغییرات
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

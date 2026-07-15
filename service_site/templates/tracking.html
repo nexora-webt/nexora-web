@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+<h1 class="mb-5">
+
+پیگیری سفارش
+
+</h1>
+
+<form method="GET">
+
+<input
+
+type="text"
+
+name="code"
+
+class="form-control"
+
+placeholder="کد پیگیری را وارد کنید">
+
+<button
+
+class="btn btn-danger mt-3">
+
+جستجو
+
+</button>
+
+</form>
+
+{% if order %}
+
+<hr>
+
+<h3>
+
+{{ order.name }}
+
+</h3>
+
+<p>
+
+وضعیت پروژه:
+
+<b>
+
+{{ order.get_status_display }}
+
+</b>
+
+</p>
+
+<p>
+
+سرویس:
+
+{{ order.service }}
+
+</p>
+
+<p>
+
+هزینه:
+
+{{ order.estimated_price }}
+
+تومان
+
+</p>
+
+{% endif %}
+
+</div>
+
+{% endblock %}

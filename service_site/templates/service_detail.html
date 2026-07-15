@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <h1 class="display-4 fw-bold">
+
+        {{ service.title }}
+
+    </h1>
+
+    <hr>
+
+    <p class="lead">
+
+        {{ service.description }}
+
+    </p>
+
+    <h3 class="mt-5">
+
+        شروع قیمت
+
+    </h3>
+
+    <h2 class="text-danger">
+
+        {{ service.base_price }} تومان
+
+    </h2>
+
+    <a href="/#order"
+
+       class="btn btn-danger btn-lg mt-4">
+
+        ثبت سفارش
+
+    </a>
+
+</div>
+
+{% endblock %}
