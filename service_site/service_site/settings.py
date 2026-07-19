@@ -31,7 +31,7 @@ ALLOWED_HOSTS = [
 
     "localhost",
 
-    "amir1384.pythonanywhere.com",
+    "nexoraweb.pythonanywhere.com",
 
 ]
 
