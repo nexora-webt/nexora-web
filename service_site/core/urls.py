@@ -28,6 +28,12 @@ urlpatterns = [
         name="about",
     ),
 
+    path(
+    "contact/",
+    views.contact,
+    name="contact",
+    ),
+
     # ==========================
     # Success
     # ==========================

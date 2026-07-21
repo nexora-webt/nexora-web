@@ -1,19 +1,1539 @@
 {% extends "base.html" %}
+{% load static %}
+{% load i18n %}
 
 {% block title %}
-درباره ما
+درباره ما | Nexora Web
+{% endblock %}
+
+{% block description %}
+Nexora Web یکی از زیرمجموعه‌های تخصصی هلدینگ Nexora در حوزه طراحی وب‌سایت، توسعه نرم‌افزار، هوش مصنوعی و راهکارهای دیجیتال است.
 {% endblock %}
 
 {% block content %}
 
-<div class="container py-5">
+<!-- ========================================= -->
+<!-- HERO -->
+<!-- ========================================= -->
 
-<h1 class="text-center mb-5">
+<section class="about-hero position-relative overflow-hidden">
 
-درباره Nexora
+    <div class="container py-5">
 
-</h1>
+        <div class="row align-items-center g-5">
 
-</div>
+            <div class="col-lg-6">
+
+                <span class="badge bg-danger px-3 py-2 mb-3">
+
+                    ABOUT NEXORA WEB
+
+                </span>
+
+                <h1 class="display-4 fw-bold mb-4">
+
+                    آینده‌ی وب را
+                    <span class="text-danger">
+                        با هم می‌سازیم.
+                    </span>
+
+                </h1>
+
+                <p class="lead text-secondary mb-4">
+
+                    Nexora Web بازوی تخصصی توسعه وب در هلدینگ Nexora است.
+                    ما با تلفیق طراحی مدرن، برنامه‌نویسی حرفه‌ای و فناوری‌های
+                    روز دنیا، تجربه‌ای متفاوت برای کسب‌وکارها خلق می‌کنیم.
+
+                </p>
+
+                <div class="d-flex flex-wrap gap-3">
+
+                    <a href="#about-company"
+                       class="btn btn-danger btn-lg px-4">
+
+                        بیشتر بدانید
+
+                    </a>
+
+                    <a href="/#order"
+                       class="btn btn-outline-light btn-lg px-4">
+
+                        شروع همکاری
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6 text-center">
+
+                <img src="{% static 'img/about-hero.png' %}"
+                     class="img-fluid floating-image"
+                     alt="Nexora Web">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="hero-circle hero-circle-1"></div>
+
+    <div class="hero-circle hero-circle-2"></div>
+
+</section>
+
+<!-- ========================================= -->
+<!-- ABOUT -->
+<!-- ========================================= -->
+
+<section id="about-company"
+         class="py-5">
+
+    <div class="container">
+
+        <div class="row align-items-center g-5">
+
+            <div class="col-lg-6">
+
+                <img src="{% static 'img/about-company.png' %}"
+                     class="img-fluid rounded-4 shadow-lg"
+                     alt="About Nexora">
+
+            </div>
+
+            <div class="col-lg-6">
+
+                <span class="text-danger fw-bold">
+
+                    WHO WE ARE
+
+                </span>
+
+                <h2 class="fw-bold display-6 mt-3 mb-4">
+
+                    Nexora Web چیست؟
+
+                </h2>
+
+                <p class="text-secondary fs-5">
+
+                    Nexora Web یکی از زیرمجموعه‌های تخصصی هلدینگ Nexora
+                    است که با تمرکز بر طراحی وب‌سایت، توسعه سامانه‌های
+                    اختصاصی، هوش مصنوعی و راهکارهای دیجیتال فعالیت می‌کند.
+
+                </p>
+
+                <p class="text-secondary">
+
+                    ما معتقدیم هر کسب‌وکار، صرف‌نظر از اندازه آن،
+                    شایسته یک حضور حرفه‌ای در دنیای دیجیتال است.
+                    به همین دلیل تمامی پروژه‌ها با رعایت
+                    استانداردهای جهانی، طراحی مدرن و معماری
+                    مقیاس‌پذیر توسعه داده می‌شوند.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- ========================================= -->
+<!-- MISSION & VISION -->
+<!-- ========================================= -->
+
+<section class="py-5 bg-dark-subtle">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="text-danger fw-bold">
+
+                OUR PURPOSE
+
+            </span>
+
+            <h2 class="display-5 fw-bold mt-3">
+
+                مأموریت و چشم‌انداز ما
+
+            </h2>
+
+            <p class="text-secondary col-lg-8 mx-auto">
+
+                ما تنها یک وب‌سایت طراحی نمی‌کنیم؛
+                بلکه زیرساختی دیجیتال ایجاد می‌کنیم که
+                کسب‌وکارها بتوانند با اطمینان رشد کنند،
+                توسعه پیدا کنند و در بازار رقابتی امروز
+                جایگاه قدرتمندی داشته باشند.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Mission -->
+
+            <div class="col-lg-6">
+
+                <div class="glass-card h-100 p-5 rounded-4">
+
+                    <div class="icon-box bg-danger mb-4">
+
+                        <i class="fa-solid fa-bullseye"></i>
+
+                    </div>
+
+                    <h3 class="fw-bold mb-3">
+
+                        مأموریت ما
+
+                    </h3>
+
+                    <p class="text-secondary">
+
+                        ارائه راهکارهای نوین در زمینه طراحی وب،
+                        توسعه نرم‌افزار و خدمات دیجیتال
+                        با تمرکز بر کیفیت، امنیت،
+                        سرعت و تجربه کاربری.
+
+                    </p>
+
+                    <p class="text-secondary mb-0">
+
+                        هدف ما کمک به کسب‌وکارها برای ورود
+                        حرفه‌ای به دنیای دیجیتال و تبدیل
+                        ایده‌های آن‌ها به پروژه‌هایی موفق،
+                        پایدار و آینده‌محور است.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Vision -->
+
+            <div class="col-lg-6">
+
+                <div class="glass-card h-100 p-5 rounded-4">
+
+                    <div class="icon-box bg-primary mb-4">
+
+                        <i class="fa-solid fa-earth-americas"></i>
+
+                    </div>
+
+                    <h3 class="fw-bold mb-3">
+
+                        چشم‌انداز ما
+
+                    </h3>
+
+                    <p class="text-secondary">
+
+                        تبدیل شدن به یکی از معتبرترین
+                        مجموعه‌های توسعه فناوری در سطح
+                        بین‌المللی و ایجاد اکوسیستمی
+                        کامل از خدمات دیجیتال تحت برند
+                        Nexora.
+
+                    </p>
+
+                    <p class="text-secondary mb-0">
+
+                        ما آینده‌ای را تصور می‌کنیم که
+                        در آن کسب‌وکارها بدون محدودیت
+                        بتوانند با استفاده از فناوری،
+                        سریع‌تر رشد کنند و بازارهای
+                        جهانی را هدف قرار دهند.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ========================================= -->
+<!-- CORE VALUES -->
+<!-- ========================================= -->
+
+<section class="py-5">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="text-danger fw-bold">
+
+                OUR VALUES
+
+            </span>
+
+            <h2 class="display-5 fw-bold mt-3">
+
+                ارزش‌هایی که به آن پایبندیم
+
+            </h2>
+
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="value-card text-center p-4 rounded-4 h-100">
+
+                    <div class="value-icon mb-4">
+
+                        <i class="fa-solid fa-lightbulb"></i>
+
+                    </div>
+
+                    <h5 class="fw-bold">
+
+                        نوآوری
+
+                    </h5>
+
+                    <p class="text-secondary mb-0">
+
+                        استفاده از فناوری‌های روز و
+                        ارائه راهکارهای خلاقانه.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="value-card text-center p-4 rounded-4 h-100">
+
+                    <div class="value-icon mb-4">
+
+                        <i class="fa-solid fa-shield-halved"></i>
+
+                    </div>
+
+                    <h5 class="fw-bold">
+
+                        امنیت
+
+                    </h5>
+
+                    <p class="text-secondary mb-0">
+
+                        رعایت بالاترین استانداردهای
+                        امنیت و کیفیت.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="value-card text-center p-4 rounded-4 h-100">
+
+                    <div class="value-icon mb-4">
+
+                        <i class="fa-solid fa-users"></i>
+
+                    </div>
+
+                    <h5 class="fw-bold">
+
+                        همکاری
+
+                    </h5>
+
+                    <p class="text-secondary mb-0">
+
+                        ایجاد روابط بلندمدت و حرفه‌ای
+                        با مشتریان.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="value-card text-center p-4 rounded-4 h-100">
+
+                    <div class="value-icon mb-4">
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                    </div>
+
+                    <h5 class="fw-bold">
+
+                        رشد
+
+                    </h5>
+
+                    <p class="text-secondary mb-0">
+
+                        رشد مستمر مشتریان،
+                        تیم و برند Nexora.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- ========================================= -->
+<!-- WHY NEXORA WEB -->
+<!-- ========================================= -->
+
+<section class="py-5 bg-body-tertiary">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="text-danger fw-bold">
+
+                WHY CHOOSE US
+
+            </span>
+
+            <h2 class="display-5 fw-bold mt-3">
+
+                چرا Nexora Web؟
+
+            </h2>
+
+            <p class="text-secondary col-lg-8 mx-auto">
+
+                ما تنها خدمات طراحی سایت ارائه نمی‌دهیم؛
+                بلکه زیرساختی مطمئن برای رشد دیجیتال
+                کسب‌وکارها ایجاد می‌کنیم.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Card -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="feature-card h-100 p-4 rounded-4">
+
+                    <div class="feature-icon bg-danger">
+
+                        <i class="fa-solid fa-laptop-code"></i>
+
+                    </div>
+
+                    <h4 class="fw-bold mt-4">
+
+                        طراحی اختصاصی
+
+                    </h4>
+
+                    <p class="text-secondary">
+
+                        تمامی پروژه‌ها بدون استفاده از قالب‌های آماده
+                        و کاملاً متناسب با هویت برند شما طراحی می‌شوند.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Card -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="feature-card h-100 p-4 rounded-4">
+
+                    <div class="feature-icon bg-primary">
+
+                        <i class="fa-solid fa-bolt"></i>
+
+                    </div>
+
+                    <h4 class="fw-bold mt-4">
+
+                        عملکرد سریع
+
+                    </h4>
+
+                    <p class="text-secondary">
+
+                        بهینه‌سازی حرفه‌ای برای سرعت بالا،
+                        تجربه کاربری بهتر و رتبه مناسب در موتورهای جستجو.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Card -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="feature-card h-100 p-4 rounded-4">
+
+                    <div class="feature-icon bg-success">
+
+                        <i class="fa-solid fa-shield"></i>
+
+                    </div>
+
+                    <h4 class="fw-bold mt-4">
+
+                        امنیت پیشرفته
+
+                    </h4>
+
+                    <p class="text-secondary">
+
+                        رعایت استانداردهای امنیتی و استفاده از
+                        معماری مناسب برای محافظت از اطلاعات.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Card -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="feature-card h-100 p-4 rounded-4">
+
+                    <div class="feature-icon bg-warning">
+
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+
+                    </div>
+
+                    <h4 class="fw-bold mt-4">
+
+                        ریسپانسیو کامل
+
+                    </h4>
+
+                    <p class="text-secondary">
+
+                        نمایش صحیح و حرفه‌ای در موبایل،
+                        تبلت و تمامی نمایشگرها.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Card -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="feature-card h-100 p-4 rounded-4">
+
+                    <div class="feature-icon bg-info">
+
+                        <i class="fa-solid fa-robot"></i>
+
+                    </div>
+
+                    <h4 class="fw-bold mt-4">
+
+                        فناوری‌های نوین
+
+                    </h4>
+
+                    <p class="text-secondary">
+
+                        استفاده از هوش مصنوعی،
+                        ابزارهای مدرن و تکنولوژی‌های روز
+                        در فرآیند توسعه پروژه‌ها.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- Card -->
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="feature-card h-100 p-4 rounded-4">
+
+                    <div class="feature-icon bg-secondary">
+
+                        <i class="fa-solid fa-headset"></i>
+
+                    </div>
+
+                    <h4 class="fw-bold mt-4">
+
+                        پشتیبانی واقعی
+
+                    </h4>
+
+                    <p class="text-secondary">
+
+                        حتی پس از تحویل پروژه نیز
+                        همراه شما خواهیم بود تا
+                        مسیر رشد کسب‌وکارتان ادامه پیدا کند.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ========================================= -->
+<!-- TECHNOLOGIES -->
+<!-- ========================================= -->
+
+<section class="py-5">
+
+    <div class="container">
+
+        <div class="row align-items-center g-5">
+
+            <div class="col-lg-6">
+
+                <span class="text-danger fw-bold">
+
+                    TECHNOLOGIES
+
+                </span>
+
+                <h2 class="display-5 fw-bold mt-3 mb-4">
+
+                    تکنولوژی‌هایی که با آن‌ها
+                    آینده را می‌سازیم
+
+                </h2>
+
+                <p class="text-secondary">
+
+                    ما از جدیدترین فناوری‌های توسعه وب
+                    برای ساخت پروژه‌هایی سریع،
+                    پایدار و مقیاس‌پذیر استفاده می‌کنیم.
+
+                </p>
+
+                <div class="d-flex flex-wrap gap-3 mt-4">
+
+                    <span class="badge rounded-pill bg-danger px-4 py-3">
+
+                        Django
+
+                    </span>
+
+                    <span class="badge rounded-pill bg-primary px-4 py-3">
+
+                        Python
+
+                    </span>
+
+                    <span class="badge rounded-pill bg-success px-4 py-3">
+
+                        Bootstrap
+
+                    </span>
+
+                    <span class="badge rounded-pill bg-warning text-dark px-4 py-3">
+
+                        JavaScript
+
+                    </span>
+
+                    <span class="badge rounded-pill bg-info text-dark px-4 py-3">
+
+                        HTML5
+
+                    </span>
+
+                    <span class="badge rounded-pill bg-secondary px-4 py-3">
+
+                        CSS3
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6 text-center">
+
+                <img src="{% static 'img/technologies.png' %}"
+                     class="img-fluid"
+                     alt="Technologies">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- ========================================= -->
+<!-- COUNTERS -->
+<!-- ========================================= -->
+
+<section class="py-5 bg-dark text-white position-relative overflow-hidden">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="text-danger fw-bold">
+
+                OUR ACHIEVEMENTS
+
+            </span>
+
+            <h2 class="display-5 fw-bold mt-3">
+
+                دستاوردهای Nexora Web
+
+            </h2>
+
+            <p class="text-light opacity-75">
+
+                مسیر ما تازه آغاز شده؛ اما با هر پروژه،
+                قدمی بزرگ‌تر به سمت آینده برمی‌داریم.
+
+            </p>
+
+        </div>
+
+        <div class="row text-center g-4">
+
+            <div class="col-6 col-lg-3">
+
+                <div class="counter-card p-4 rounded-4">
+
+                    <i class="fa-solid fa-code display-5 text-danger mb-3"></i>
+
+                    <h2 class="fw-bold counter"
+                        data-target="120">
+
+                        0
+
+                    </h2>
+
+                    <p class="mb-0">
+
+                        پروژه انجام شده
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-6 col-lg-3">
+
+                <div class="counter-card p-4 rounded-4">
+
+                    <i class="fa-solid fa-users display-5 text-primary mb-3"></i>
+
+                    <h2 class="fw-bold counter"
+                        data-target="95">
+
+                        0
+
+                    </h2>
+
+                    <p class="mb-0">
+
+                        مشتری راضی
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-6 col-lg-3">
+
+                <div class="counter-card p-4 rounded-4">
+
+                    <i class="fa-solid fa-earth-americas display-5 text-success mb-3"></i>
+
+                    <h2 class="fw-bold counter"
+                        data-target="12">
+
+                        0
+
+                    </h2>
+
+                    <p class="mb-0">
+
+                        کشور هدف
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-6 col-lg-3">
+
+                <div class="counter-card p-4 rounded-4">
+
+                    <i class="fa-solid fa-medal display-5 text-warning mb-3"></i>
+
+                    <h2 class="fw-bold counter"
+                        data-target="100">
+
+                        0
+
+                    </h2>
+
+                    <p class="mb-0">
+
+                        کیفیت خدمات
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ========================================= -->
+<!-- WORKFLOW -->
+<!-- ========================================= -->
+
+<section class="py-5">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="text-danger fw-bold">
+
+                OUR PROCESS
+
+            </span>
+
+            <h2 class="display-5 fw-bold mt-3">
+
+                روند اجرای پروژه
+
+            </h2>
+
+            <p class="text-secondary">
+
+                هر پروژه با یک فرآیند استاندارد،
+                شفاف و حرفه‌ای اجرا می‌شود.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="process-card text-center p-4 rounded-4 h-100">
+
+                    <div class="process-number">
+
+                        01
+
+                    </div>
+
+                    <h5 class="fw-bold mt-4">
+
+                        تحلیل نیازها
+
+                    </h5>
+
+                    <p class="text-secondary">
+
+                        بررسی کامل اهداف،
+                        امکانات و نیازهای پروژه.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="process-card text-center p-4 rounded-4 h-100">
+
+                    <div class="process-number">
+
+                        02
+
+                    </div>
+
+                    <h5 class="fw-bold mt-4">
+
+                        طراحی UI/UX
+
+                    </h5>
+
+                    <p class="text-secondary">
+
+                        طراحی رابط کاربری مدرن
+                        و تجربه کاربری حرفه‌ای.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="process-card text-center p-4 rounded-4 h-100">
+
+                    <div class="process-number">
+
+                        03
+
+                    </div>
+
+                    <h5 class="fw-bold mt-4">
+
+                        توسعه
+
+                    </h5>
+
+                    <p class="text-secondary">
+
+                        پیاده‌سازی پروژه
+                        با جدیدترین فناوری‌ها.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="process-card text-center p-4 rounded-4 h-100">
+
+                    <div class="process-number">
+
+                        04
+
+                    </div>
+
+                    <h5 class="fw-bold mt-4">
+
+                        تحویل و پشتیبانی
+
+                    </h5>
+
+                    <p class="text-secondary">
+
+                        آموزش، پشتیبانی
+                        و توسعه آینده پروژه.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ========================================= -->
+<!-- TIMELINE -->
+<!-- ========================================= -->
+
+<section class="py-5 bg-body-tertiary">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="text-danger fw-bold">
+
+                OUR JOURNEY
+
+            </span>
+
+            <h2 class="display-5 fw-bold mt-3">
+
+                مسیر رشد Nexora Web
+
+            </h2>
+
+        </div>
+
+        <div class="timeline">
+
+            <div class="timeline-item">
+
+                <h5 class="fw-bold">
+
+                    شروع مسیر
+
+                </h5>
+
+                <p class="text-secondary">
+
+                    آغاز فعالیت به عنوان واحد تخصصی توسعه وب
+                    در اکوسیستم Nexora.
+
+                </p>
+
+            </div>
+
+            <div class="timeline-item">
+
+                <h5 class="fw-bold">
+
+                    توسعه خدمات
+
+                </h5>
+
+                <p class="text-secondary">
+
+                    گسترش خدمات طراحی وب،
+                    سامانه‌های اختصاصی و فروشگاه‌های اینترنتی.
+
+                </p>
+
+            </div>
+
+            <div class="timeline-item">
+
+                <h5 class="fw-bold">
+
+                    ورود فناوری AI
+
+                </h5>
+
+                <p class="text-secondary">
+
+                    استفاده از هوش مصنوعی
+                    در طراحی و توسعه پروژه‌ها.
+
+                </p>
+
+            </div>
+
+            <div class="timeline-item">
+
+                <h5 class="fw-bold">
+
+                    بازار جهانی
+
+                </h5>
+
+                <p class="text-secondary">
+
+                    هدف‌گذاری برای ارائه خدمات
+                    در بازارهای بین‌المللی.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- ========================================= -->
+<!-- NEXORA ECOSYSTEM -->
+<!-- ========================================= -->
+
+<section class="py-5">
+
+    <div class="container">
+
+        <div class="row align-items-center g-5">
+
+            <div class="col-lg-6">
+
+                <img src="{% static 'img/nexora-ecosystem.png' %}"
+                     class="img-fluid rounded-4 shadow-lg"
+                     alt="Nexora Ecosystem">
+
+            </div>
+
+            <div class="col-lg-6">
+
+                <span class="text-danger fw-bold">
+
+                    THE NEXORA ECOSYSTEM
+
+                </span>
+
+                <h2 class="display-5 fw-bold mt-3 mb-4">
+
+                    عضوی از خانواده Nexora
+
+                </h2>
+
+                <p class="text-secondary fs-5">
+
+                    Nexora Web تنها یک شرکت طراحی سایت نیست؛
+                    بلکه یکی از زیرمجموعه‌های تخصصی هلدینگ
+                    <strong>Nexora</strong>
+                    محسوب می‌شود.
+
+                </p>
+
+                <p class="text-secondary">
+
+                    هلدینگ Nexora با ایجاد مجموعه‌ای از
+                    شرکت‌های تخصصی در حوزه فناوری،
+                    هوش مصنوعی، طراحی، آموزش،
+                    زیرساخت ابری و خدمات دیجیتال،
+                    در حال ساخت یک اکوسیستم کامل
+                    برای آینده فناوری است.
+
+                </p>
+
+                <p class="text-secondary">
+
+                    وظیفه Nexora Web توسعه
+                    وب‌سایت‌ها، سامانه‌های تحت وب،
+                    پنل‌های مدیریتی، فروشگاه‌های اینترنتی
+                    و راهکارهای نرم‌افزاری است
+                    تا کسب‌وکارها بتوانند با قدرت
+                    وارد دنیای دیجیتال شوند.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ========================================= -->
+<!-- TEAM -->
+<!-- ========================================= -->
+
+<section class="py-5 bg-body-tertiary">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="text-danger fw-bold">
+
+                OUR TEAM
+
+            </span>
+
+            <h2 class="display-5 fw-bold mt-3">
+
+                تیمی که آینده را می‌سازد
+
+            </h2>
+
+            <p class="text-secondary col-lg-8 mx-auto">
+
+                موفقیت هر پروژه نتیجه همکاری
+                متخصصان خلاق، توسعه‌دهندگان،
+                طراحان و مهندسانی است که
+                با عشق به فناوری فعالیت می‌کنند.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="team-card text-center p-4 rounded-4">
+
+                    <img src="{% static 'img/team-placeholder.png' %}"
+                         class="rounded-circle mb-3"
+                         width="130"
+                         alt="CEO">
+
+                    <h5 class="fw-bold">
+
+                        مدیریت پروژه
+
+                    </h5>
+
+                    <p class="text-danger">
+
+                        Project Management
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="team-card text-center p-4 rounded-4">
+
+                    <img src="{% static 'img/team-placeholder.png' %}"
+                         class="rounded-circle mb-3"
+                         width="130"
+                         alt="Backend">
+
+                    <h5 class="fw-bold">
+
+                        توسعه Backend
+
+                    </h5>
+
+                    <p class="text-danger">
+
+                        Python • Django
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="team-card text-center p-4 rounded-4">
+
+                    <img src="{% static 'img/team-placeholder.png' %}"
+                         class="rounded-circle mb-3"
+                         width="130"
+                         alt="Frontend">
+
+                    <h5 class="fw-bold">
+
+                        توسعه Frontend
+
+                    </h5>
+
+                    <p class="text-danger">
+
+                        HTML • CSS • JavaScript
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="team-card text-center p-4 rounded-4">
+
+                    <img src="{% static 'img/team-placeholder.png' %}"
+                         class="rounded-circle mb-3"
+                         width="130"
+                         alt="UI">
+
+                    <h5 class="fw-bold">
+
+                        UI / UX Design
+
+                    </h5>
+
+                    <p class="text-danger">
+
+                        Creative Design
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- ========================================= -->
+<!-- CTA -->
+<!-- ========================================= -->
+
+<section class="py-5 text-center position-relative overflow-hidden">
+
+    <div class="container">
+
+        <div class="cta-box rounded-5 p-5">
+
+            <span class="badge bg-danger px-3 py-2 mb-3">
+
+                START YOUR PROJECT
+
+            </span>
+
+            <h2 class="display-4 fw-bold mb-4">
+
+                آماده ساخت
+                <span class="text-danger">
+                    پروژه بعدی
+                </span>
+                خود هستید؟
+
+            </h2>
+
+            <p class="text-secondary fs-5 mb-5">
+
+                اگر به دنبال یک وب‌سایت حرفه‌ای،
+                سریع، امن و آینده‌محور هستید،
+                تیم Nexora Web آماده همکاری با شماست.
+
+            </p>
+
+            <div class="d-flex justify-content-center flex-wrap gap-3">
+
+                <a href="/#order"
+                   class="btn btn-danger btn-lg px-5">
+
+                    ثبت سفارش
+
+                </a>
+
+                <a href="{% url 'core:contact' %}"
+                   class="btn btn-outline-light btn-lg px-5">
+
+                    تماس با ما
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_css %}
+
+<style>
+
+.about-hero{
+padding:140px 0 100px;
+background:#0d1117;
+}
+
+.hero-circle{
+position:absolute;
+border-radius:50%;
+filter:blur(100px);
+opacity:.15;
+}
+
+.hero-circle-1{
+width:300px;
+height:300px;
+background:#ff003c;
+top:-100px;
+left:-80px;
+}
+
+.hero-circle-2{
+width:350px;
+height:350px;
+background:#0066ff;
+bottom:-150px;
+right:-100px;
+}
+
+.floating-image{
+animation:float 5s ease-in-out infinite;
+}
+
+@keyframes float{
+
+0%{transform:translateY(0);}
+
+50%{transform:translateY(-15px);}
+
+100%{transform:translateY(0);}
+
+}
+
+.glass-card,
+.feature-card,
+.value-card,
+.process-card,
+.team-card,
+.counter-card,
+.cta-box{
+
+background:rgba(255,255,255,.04);
+backdrop-filter:blur(15px);
+border:1px solid rgba(255,255,255,.08);
+transition:.35s;
+
+}
+
+.glass-card:hover,
+.feature-card:hover,
+.value-card:hover,
+.process-card:hover,
+.team-card:hover,
+.counter-card:hover{
+
+transform:translateY(-8px);
+
+}
+
+.icon-box,
+.feature-icon,
+.value-icon{
+
+width:70px;
+height:70px;
+display:flex;
+justify-content:center;
+align-items:center;
+border-radius:18px;
+font-size:28px;
+color:#fff;
+
+}
+
+.process-number{
+
+width:70px;
+height:70px;
+background:#dc3545;
+border-radius:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+font-weight:bold;
+font-size:24px;
+margin:auto;
+color:#fff;
+
+}
+
+.timeline{
+
+border-left:3px solid #dc3545;
+padding-left:35px;
+
+}
+
+.timeline-item{
+
+position:relative;
+margin-bottom:40px;
+
+}
+
+.timeline-item::before{
+
+content:"";
+width:18px;
+height:18px;
+background:#dc3545;
+border-radius:50%;
+position:absolute;
+left:-45px;
+top:5px;
+
+}
+
+.cta-box{
+
+background:#111827;
+
+}
+
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+
+const counters=document.querySelectorAll(".counter");
+
+counters.forEach(counter=>{
+
+const target=+counter.dataset.target;
+
+let count=0;
+
+const speed=target/100;
+
+const update=()=>{
+
+count+=speed;
+
+if(count<target){
+
+counter.innerText=Math.floor(count);
+
+requestAnimationFrame(update);
+
+}else{
+
+counter.innerText=target+"+";
+
+}
+
+};
+
+update();
+
+});
+
+</script>
 
 {% endblock %}
