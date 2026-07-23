@@ -103,7 +103,19 @@ if not DEBUG:
 
     SESSION_COOKIE_SECURE = True
 
+    SESSION_COOKIE_HTTPONLY = True
+
+    SESSION_COOKIE_SAMESITE = "Lax"
+
+    SESSION_COOKIE_AGE = 60 * 60 * 2
+
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
     CSRF_COOKIE_SECURE = True
+
+    CSRF_COOKIE_HTTPONLY = True
+
+    CSRF_COOKIE_SAMESITE = "Lax"
 
     SECURE_HSTS_SECONDS = 31536000
 
@@ -117,7 +129,19 @@ else:
 
     SESSION_COOKIE_SECURE = False
 
+    SESSION_COOKIE_HTTPONLY = True
+
+    SESSION_COOKIE_SAMESITE = "Lax"
+
+    SESSION_COOKIE_AGE = 60 * 60 * 2
+
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
     CSRF_COOKIE_SECURE = False
+
+    CSRF_COOKIE_HTTPONLY = True
+
+    CSRF_COOKIE_SAMESITE = "Lax"
 
 # ==========================================================
 # COOKIE SECURITY
@@ -1144,3 +1168,85 @@ AXES_COOLOFF_TIME = 1  # ساعت
 AXES_LOCKOUT_CALLABLE = None
 
 AXES_RESET_ON_SUCCESS = True
+
+# ==========================================================
+# LOGGING
+# ==========================================================
+
+import os
+
+LOG_DIR = BASE_DIR / "logs"
+
+os.makedirs(LOG_DIR, exist_ok=True)
+
+LOGGING = {
+
+    "version": 1,
+
+    "disable_existing_loggers": False,
+
+    "formatters": {
+
+        "verbose": {
+
+            "format": "{levelname} {asctime} {module} {message}",
+
+            "style": "{",
+
+        },
+
+    },
+
+    "handlers": {
+
+        "security_file": {
+
+            "level": "WARNING",
+
+            "class": "logging.FileHandler",
+
+            "filename": LOG_DIR / "security.log",
+
+            "formatter": "verbose",
+
+        },
+
+        "django_file": {
+
+            "level": "INFO",
+
+            "class": "logging.FileHandler",
+
+            "filename": LOG_DIR / "django.log",
+
+            "formatter": "verbose",
+
+        },
+
+    },
+
+    "loggers": {
+
+        "django": {
+
+            "handlers": ["django_file"],
+
+            "level": "INFO",
+
+            "propagate": True,
+
+        },
+
+        "django.security": {
+
+            "handlers": ["security_file"],
+
+            "level": "WARNING",
+
+            "propagate": False,
+
+        },
+
+    },
+
+}
