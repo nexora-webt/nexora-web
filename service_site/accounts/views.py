@@ -3,11 +3,12 @@ from django.contrib.auth import (login,logout,update_session_auth_hash,)
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect
+from django_ratelimit.decorators import ratelimit
 from .forms import CustomPasswordChangeForm
 from core.models import Order
 from .forms import RegisterForm, ProfileForm
 
-
+@ratelimit(key="ip", rate="3/m", method="POST", block=True)
 def register_view(request):
 
     if request.user.is_authenticated:
@@ -40,7 +41,7 @@ def register_view(request):
         },
     )
 
-
+@ratelimit(key="ip", rate="10/m", method="POST", block=True)
 def login_view(request):
 
     if request.user.is_authenticated:
@@ -153,6 +154,7 @@ def profile_view(request):
     )
 
 @login_required
+@ratelimit(key="user", rate="5/h", method="POST", block=True)
 def change_password(request):
 
     if request.method == "POST":

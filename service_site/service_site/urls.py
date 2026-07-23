@@ -1,7 +1,8 @@
 """
 URL configuration for service_site project.
 """
-
+from django.contrib.admin.views.decorators import staff_member_required
+from django.urls import path
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -22,7 +23,7 @@ urlpatterns = [
 
     # Django Admin
     path(
-        "admin/",
+        "control-panel-x9K2aP7/",
         admin.site.urls,
     ),
 

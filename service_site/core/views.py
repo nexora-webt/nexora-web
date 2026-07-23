@@ -4,6 +4,8 @@ from django.shortcuts import (
     get_object_or_404,
 )
 
+from django_ratelimit.decorators import ratelimit
+
 from django.contrib import messages
 
 from django.contrib.auth.decorators import login_required
@@ -158,7 +160,7 @@ def calculate_price(service, description):
 # ==========================================================
 # HOME
 # ==========================================================
-
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def home(request):
 
     services = Service.objects.all()
@@ -337,7 +339,7 @@ def service_detail(request, slug):
 # ==========================================================
 # CONTACT
 # ==========================================================
-
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def contact(request):
 
     form = ContactForm()
@@ -415,7 +417,7 @@ def success(request):
 # ==========================================================
 # CAREERS
 # ==========================================================
-
+@ratelimit(key="ip", rate="3/m", method="POST", block=True)
 def careers(request):
 
     jobs = Career.objects.filter(
