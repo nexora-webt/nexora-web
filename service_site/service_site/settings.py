@@ -1042,17 +1042,20 @@ CONTENT_SECURITY_POLICY = {
         "default-src": ("'self'",),
 
         "script-src": (
-            "'self'",
-            "'unsafe-inline'",
-            "https://cdn.jsdelivr.net",
-        ),
-
-        "style-src": (
         "'self'",
         "'unsafe-inline'",
         "https://cdn.jsdelivr.net",
-        "https://fonts.googleapis.com",
+        "https://unpkg.com",
         "https://cdnjs.cloudflare.com",
+        ),
+
+        "style-src": (
+            "'self'",
+            "'unsafe-inline'",
+            "https://cdn.jsdelivr.net",
+            "https://fonts.googleapis.com",
+            "https://unpkg.com",
+            "https://cdnjs.cloudflare.com",
         ),
 
         "font-src": (
@@ -1071,6 +1074,8 @@ CONTENT_SECURITY_POLICY = {
         "connect-src": (
             "'self'",
             "https://cdn.jsdelivr.net",
+            "https://unpkg.com",
+            "https://cdnjs.cloudflare.com",
         ),
 
         "object-src": (
