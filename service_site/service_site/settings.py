@@ -1048,15 +1048,17 @@ CONTENT_SECURITY_POLICY = {
         ),
 
         "style-src": (
-            "'self'",
-            "'unsafe-inline'",
-            "https://cdn.jsdelivr.net",
-            "https://fonts.googleapis.com",
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://fonts.googleapis.com",
+        "https://cdnjs.cloudflare.com",
         ),
 
         "font-src": (
             "'self'",
             "https://fonts.gstatic.com",
+            "https://cdnjs.cloudflare.com",
             "data:",
         ),
 
@@ -1068,6 +1070,7 @@ CONTENT_SECURITY_POLICY = {
 
         "connect-src": (
             "'self'",
+            "https://cdn.jsdelivr.net",
         ),
 
         "object-src": (
