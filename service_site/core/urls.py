@@ -2,8 +2,6 @@ from django.urls import path
 
 from . import views
 
-from django.conf.urls.i18n import i18n_patterns
-
 app_name = "core"
 
 
@@ -119,6 +117,14 @@ urlpatterns = [
 
 ]
 
-urlpatterns += i18n_patterns(
+urlpatterns = [
+
     path("", views.home, name="home"),
-)
+
+    path(
+        "services/<slug:slug>/",
+        views.service_detail,
+        name="service_detail"
+    ),
+
+]

@@ -13,7 +13,7 @@ from core.converters import UnicodeSlugConverter
 
 register_converter(UnicodeSlugConverter, "uslug")
 
-urlpatterns = [
+urlpatterns = i18n_patterns(
 
     # Django Language
     path(
@@ -33,7 +33,7 @@ urlpatterns = [
         include("accounts.urls"),
     ),
 
-]
+)
 
 # Main Website
 urlpatterns += i18n_patterns(
