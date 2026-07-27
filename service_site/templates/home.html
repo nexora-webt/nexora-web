@@ -44,9 +44,6 @@ Nexora Web | طراحی سایت
 
 {% endif %}
 
-<form action="{% url 'set_language' %}" method="post">
-{% csrf_token %}
-
 <input name="next" type="hidden" value="{{ request.path }}">
 
 <select name="language" onchange="this.form.submit()">
