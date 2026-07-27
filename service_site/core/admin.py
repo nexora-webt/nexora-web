@@ -420,22 +420,6 @@ class ServiceAdmin(admin.ModelAdmin):
     )
 
 
-
-    def get_queryset(self, request):
-
-        queryset = super().get_queryset(request)
-
-
-        return queryset.annotate(
-
-            total_portfolios=Count(
-                "portfolios"
-            )
-
-        )
-
-
-
     @admin.display(
 
         description="نمونه‌کارها",
@@ -446,7 +430,7 @@ class ServiceAdmin(admin.ModelAdmin):
 
     def portfolio_count(self, obj):
 
-        return obj.total_portfolios
+        return "-"
 
 # ==========================================================
 # PORTFOLIO IMAGE INLINE
