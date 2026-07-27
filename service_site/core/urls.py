@@ -116,15 +116,3 @@ urlpatterns = [
     ),
 
 ]
-
-urlpatterns = [
-
-    path("", views.home, name="home"),
-
-    path(
-        "services/<slug:slug>/",
-        views.service_detail,
-        name="service_detail"
-    ),
-
-]
