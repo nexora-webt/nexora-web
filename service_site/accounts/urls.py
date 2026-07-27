@@ -1,41 +1,44 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+
+
+app_name = "accounts"
+
 
 urlpatterns = [
 
     path(
-        "register/",
-        views.register_view,
-        name="register",
+        "",
+        include("accounts.urls_auth")
     ),
 
-    path(
-        "login/",
-        views.login_view,
-        name="login",
-    ),
 
     path(
-        "logout/",
-        views.logout_view,
-        name="logout",
+        "",
+        include("accounts.urls_profile")
     ),
 
-    path(
-        "dashboard/",
-        views.dashboard,
-        name="dashboard",
-    ),
 
     path(
-        "profile/",
-        views.profile_view,
-        name="profile",
+        "",
+        include("accounts.urls_dashboard")
     ),
 
+
     path(
-        "password/",
-        views.change_password,
-        name="change_password",
+        "",
+        include("accounts.urls_orders")
     ),
+
+
+    path(
+        "",
+        include("accounts.urls_support")
+    ),
+
+
+    path(
+        "",
+        include("accounts.urls_finance")
+    ),
+
 ]

@@ -1,238 +1,540 @@
-from uuid import uuid4
-from pathlib import Path
-
-from django.db import models
+# ==========================================================
+# IMPORTS
+# ==========================================================
+import os
+import uuid
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import (
-    MinValueValidator,
-    MaxValueValidator,
     FileExtensionValidator,
+    MaxValueValidator,
+    MinLengthValidator,
+    MinValueValidator,
+    RegexValidator,
 )
-from django.utils.text import slugify
-from django.utils import timezone
+from django.db import models
+from django.db.models import Q
 from django.urls import reverse
-
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
+from django.utils import timezone
+from django.utils.text import slugify
 
 # ==========================================================
 # CONSTANTS
 # ==========================================================
 
-MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20MB
+MAX_UPLOAD_SIZE = 20 * 1024 * 1024
 
+ALLOWED_IMAGE_EXTENSIONS = (
+    "jpg",
+    "jpeg",
+    "png",
+    "webp",
+    "svg",
+)
 
-# ==========================================================
-# HELPERS
-# ==========================================================
+ALLOWED_DOCUMENT_EXTENSIONS = (
+    "pdf",
+    "doc",
+    "docx",
+    "xls",
+    "xlsx",
+    "ppt",
+    "pptx",
+    "zip",
+    "rar",
+    "7z",
+    "txt",
+)
 
-def upload_to_portfolio(instance, filename):
-
-    ext = Path(filename).suffix
-
-    return (
-        f"portfolio/"
-        f"{uuid4().hex}"
-        f"{ext}"
-    )
-
-
-def upload_to_orders(instance, filename):
-
-    ext = Path(filename).suffix
-
-    return (
-        f"orders/"
-        f"{instance.tracking_code}/"
-        f"{uuid4().hex}"
-        f"{ext}"
-    )
-
-
-def upload_to_versions(instance, filename):
-
-    ext = Path(filename).suffix
-
-    return (
-        f"versions/"
-        f"{instance.order.tracking_code}/"
-        f"v{instance.version}"
-        f"{ext}"
-    )
-
-
-def upload_to_resumes(instance, filename):
-
-    ext = Path(filename).suffix
-
-    return (
-        f"careers/"
-        f"{uuid4().hex}"
-        f"{ext}"
-    )
-
-
-def upload_to_tickets(instance, filename):
-
-    ext = Path(filename).suffix
-
-    return (
-        f"tickets/"
-        f"{instance.order.tracking_code}/"
-        f"{uuid4().hex}"
-        f"{ext}"
-    )
-
+ALLOWED_PORTFOLIO_EXTENSIONS = (
+    "jpg",
+    "jpeg",
+    "png",
+    "webp",
+    "gif",
+)
 
 # ==========================================================
-# FILE VALIDATOR
+# VALIDATORS
 # ==========================================================
+
+phone_validator = RegexValidator(
+    regex=r"^09\d{9}$",
+    message="شماره موبایل معتبر نیست.",
+)
+
+english_slug_validator = RegexValidator(
+    regex=r"^[a-z0-9-]+$",
+    message="اسلاگ فقط می‌تواند شامل حروف انگلیسی کوچک، عدد و - باشد.",
+)
+
+username_validator = RegexValidator(
+    regex=r"^[a-zA-Z0-9._]+$",
+    message="نام کاربری نامعتبر است.",
+)
+
+hex_color_validator = RegexValidator(
+    regex=r"^#(?:[0-9a-fA-F]{3}){1,2}$",
+    message="کد رنگ معتبر نیست.",
+)
+
+domain_validator = RegexValidator(
+    regex=r"^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+    message="دامنه معتبر نیست.",
+)
+
+tracking_code_validator = RegexValidator(
+    regex=r"^[A-Z0-9]{10,20}$",
+    message="کد پیگیری معتبر نیست.",
+)
+
+invoice_number_validator = RegexValidator(
+    regex=r"^[A-Z0-9-]+$",
+    message="شماره فاکتور معتبر نیست.",
+)
+
+version_validator = RegexValidator(
+    regex=r"^\d+\.\d+(\.\d+)?$",
+    message="فرمت نسخه باید مانند 1.0 یا 2.5.1 باشد.",
+)
+
+# ==========================================================
+# FILE VALIDATORS
+# ==========================================================
+
+image_extension_validator = FileExtensionValidator(
+    allowed_extensions=ALLOWED_IMAGE_EXTENSIONS,
+)
+
+document_extension_validator = FileExtensionValidator(
+    allowed_extensions=ALLOWED_DOCUMENT_EXTENSIONS,
+)
+
+portfolio_extension_validator = FileExtensionValidator(
+    allowed_extensions=ALLOWED_PORTFOLIO_EXTENSIONS,
+)
 
 def validate_file_size(file):
 
     if file.size > MAX_UPLOAD_SIZE:
 
-        raise ValueError(
-            "Maximum file size is 20MB."
+        raise ValidationError(
+            "حجم فایل بیشتر از 20 مگابایت است."
         )
 
+def validate_image(file):
+
+    validate_file_size(file)
+
+    image_extension_validator(file)
+
+def validate_document(file):
+
+    validate_file_size(file)
+
+    document_extension_validator(file)
+
+def validate_portfolio_image(file):
+
+    validate_file_size(file)
+
+    portfolio_extension_validator(file)
 
 # ==========================================================
-# ORDER STATUS
+# HELPERS
 # ==========================================================
 
-class OrderStatus(models.TextChoices):
+def unique_filename(filename):
 
-    PENDING = "pending", "در انتظار"
+    extension = os.path.splitext(filename)[1].lower()
 
-    PROCESSING = "processing", "در حال انجام"
+    return f"{uuid.uuid4().hex}{extension}"
 
-    REVIEW = "review", "در انتظار تایید"
 
-    COMPLETED = "completed", "تکمیل شده"
+def upload_service_image(instance, filename):
 
-    CANCELLED = "cancelled", "لغو شده"
+    return (
+        f"services/"
+        f"{instance.slug}/"
+        f"{unique_filename(filename)}"
+    )
 
+
+def upload_portfolio_cover(instance, filename):
+
+    return (
+        f"portfolio/"
+        f"{instance.slug}/cover/"
+        f"{unique_filename(filename)}"
+    )
+
+
+def upload_portfolio_gallery(instance, filename):
+
+    return (
+        f"portfolio/"
+        f"{instance.portfolio.slug}/gallery/"
+        f"{unique_filename(filename)}"
+    )
+
+
+def upload_order_file(instance, filename):
+
+    return (
+        f"orders/"
+        f"{instance.order.tracking_code}/"
+        f"{unique_filename(filename)}"
+    )
+
+
+def upload_ticket_attachment(instance, filename):
+
+    return (
+        f"tickets/"
+        f"{instance.ticket.ticket_number}/"
+        f"{unique_filename(filename)}"
+    )
+
+
+def upload_blog_image(instance, filename):
+
+    return (
+        f"blog/"
+        f"{instance.slug}/"
+        f"{unique_filename(filename)}"
+    )
+
+
+def upload_team_avatar(instance, filename):
+
+    return (
+        f"team/"
+        f"{instance.user.username}/"
+        f"{unique_filename(filename)}"
+    )
+
+
+def upload_review_avatar(instance, filename):
+
+    return (
+        f"reviews/"
+        f"{unique_filename(filename)}"
+    )
+
+
+def upload_site_logo(instance, filename):
+
+    return (
+        f"settings/logo/"
+        f"{unique_filename(filename)}"
+    )
+
+
+def upload_site_favicon(instance, filename):
+
+    return (
+        f"settings/favicon/"
+        f"{unique_filename(filename)}"
+    )
+
+
+def generate_tracking_code():
+
+    return uuid.uuid4().hex[:12].upper()
+
+
+def generate_invoice_number():
+
+    return (
+        "NXW-"
+        + timezone.now().strftime("%Y")
+        + "-"
+        + uuid.uuid4().hex[:8].upper()
+    )
+
+
+def generate_ticket_number():
+
+    return (
+        "TKT-"
+        + timezone.now().strftime("%Y")
+        + "-"
+        + uuid.uuid4().hex[:8].upper()
+    )
+
+
+def generate_slug(text):
+
+    slug = slugify(text)
+
+    if not slug:
+
+        slug = uuid.uuid4().hex[:12]
+
+    return slug
 
 # ==========================================================
-# TASK STATUS
+# BASE MODEL
 # ==========================================================
 
-class TaskStatus(models.TextChoices):
+class BaseModel(models.Model):
 
-    TODO = "todo", "انجام نشده"
-
-    DOING = "doing", "در حال انجام"
-
-    DONE = "done", "انجام شده"
-
-
-# ==========================================================
-# INVOICE STATUS
-# ==========================================================
-
-class InvoiceStatus(models.TextChoices):
-
-    UNPAID = "unpaid", "پرداخت نشده"
-
-    PAID = "paid", "پرداخت شده"
-
-    CANCELLED = "cancelled", "باطل شده"
-
-# ==========================================================
-# SERVICE MODEL
-# ==========================================================
-
-class Service(models.Model):
-
-    title = models.CharField(
-        max_length=150,
-        unique=True,
+    created_at = models.DateTimeField(
+        auto_now_add=True,
         db_index=True,
-        verbose_name="عنوان سرویس",
+        verbose_name="تاریخ ایجاد",
     )
 
-    slug = models.SlugField(
-        max_length=170,
-        unique=True,
-        allow_unicode=True,
-        db_index=True,
-        verbose_name="اسلاگ",
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="تاریخ بروزرسانی",
     )
 
-    short_description = models.CharField(
-        max_length=250,
-        verbose_name="توضیح کوتاه",
-    )
 
-    description = models.TextField(
-        verbose_name="توضیح کامل",
-    )
-
-    icon = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="آیکون FontAwesome",
-        help_text="مثال: fas fa-code",
-    )
-
-    image = models.ImageField(
-        upload_to="services/",
-        blank=True,
-        null=True,
-        verbose_name="تصویر سرویس",
-    )
-
-    base_price = models.PositiveIntegerField(
-        default=0,
-        validators=[MinValueValidator(0)],
-        verbose_name="قیمت پایه",
-    )
-
-    estimated_days = models.PositiveSmallIntegerField(
-        default=7,
-        verbose_name="مدت تقریبی اجرا (روز)",
-    )
-
-    featured = models.BooleanField(
-        default=False,
-        db_index=True,
-        verbose_name="سرویس ویژه",
-    )
-
-    active = models.BooleanField(
+    is_active = models.BooleanField(
         default=True,
         db_index=True,
         verbose_name="فعال",
     )
 
-    sort_order = models.PositiveIntegerField(
+
+    class Meta:
+
+        abstract = True
+
+
+
+# ==========================================================
+# UUID MODEL
+# ==========================================================
+
+class UUIDModel(BaseModel):
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        verbose_name="شناسه",
+    )
+
+
+    class Meta:
+
+        abstract = True
+
+
+
+# ==========================================================
+# SLUG MODEL
+# ==========================================================
+
+class SlugModel(UUIDModel):
+
+    title = models.CharField(
+        max_length=255,
+        verbose_name="عنوان",
+    )
+
+
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        validators=[
+            english_slug_validator,
+        ],
+        verbose_name="اسلاگ",
+    )
+
+
+    class Meta:
+
+        abstract = True
+
+
+
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
+
+        if not self.slug:
+
+            self.slug = generate_slug(
+                self.title
+            )
+
+
+        super().save(
+            *args,
+            **kwargs
+        )
+
+
+
+    def __str__(self):
+
+        return self.title
+
+# ==========================================================
+# CATEGORY MODEL
+# ==========================================================
+
+class Category(SlugModel):
+
+    description = models.TextField(
+        blank=True,
+        verbose_name="توضیحات",
+    )
+
+
+    icon = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="آیکون",
+    )
+
+
+    image = models.ImageField(
+        upload_to="categories/",
+        blank=True,
+        null=True,
+        validators=[
+            validate_image,
+        ],
+        verbose_name="تصویر دسته‌بندی",
+    )
+
+
+    order = models.PositiveIntegerField(
         default=0,
+        db_index=True,
         verbose_name="ترتیب نمایش",
     )
 
-    seo_title = models.CharField(
-        max_length=200,
+
+    class Meta:
+
+        verbose_name = "دسته‌بندی"
+
+        verbose_name_plural = "دسته‌بندی‌ها"
+
+        ordering = [
+            "order",
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "is_active",
+                    "order",
+                ]
+            ),
+
+        ]
+
+
+    def get_absolute_url(self):
+
+        return reverse(
+            "category_detail",
+            kwargs={
+                "slug": self.slug
+            }
+        )
+
+
+    def __str__(self):
+
+        return self.title
+
+# ==========================================================
+# SERVICE MODEL
+# ==========================================================
+
+class Service(SlugModel):
+
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
-        verbose_name="SEO Title",
+        related_name="services",
+        verbose_name="دسته‌بندی",
     )
 
-    seo_description = models.CharField(
+
+    short_description = models.CharField(
         max_length=300,
+        verbose_name="توضیح کوتاه",
+    )
+
+
+    description = models.TextField(
+        verbose_name="توضیحات کامل",
+    )
+
+
+    icon = models.CharField(
+        max_length=100,
         blank=True,
-        verbose_name="SEO Description",
+        verbose_name="آیکون",
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="تاریخ ایجاد",
+
+    image = models.ImageField(
+        upload_to=upload_service_image,
+        blank=True,
+        null=True,
+        validators=[
+            validate_image,
+        ],
+        verbose_name="تصویر سرویس",
     )
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name="آخرین بروزرسانی",
+
+    base_price = models.PositiveBigIntegerField(
+        default=0,
+        verbose_name="قیمت پایه",
     )
+
+
+    max_price = models.PositiveBigIntegerField(
+        default=0,
+        verbose_name="حداکثر قیمت",
+    )
+
+
+    duration_days = models.PositiveIntegerField(
+        default=7,
+        verbose_name="زمان تحویل (روز)",
+    )
+
+
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="سرویس ویژه",
+    )
+
+
+    is_available = models.BooleanField(
+        default=True,
+        db_index=True,
+        verbose_name="قابل سفارش",
+    )
+
+
+    features = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="ویژگی‌ها",
+    )
+
 
     class Meta:
 
@@ -240,358 +542,450 @@ class Service(models.Model):
 
         verbose_name_plural = "سرویس‌ها"
 
-        ordering = ["sort_order", "title"]
-
-        indexes = [
-            models.Index(fields=["active"]),
-            models.Index(fields=["featured"]),
-            models.Index(fields=["slug"]),
+        ordering = [
+            "-created_at",
         ]
 
-    def __str__(self):
 
-        return self.title
+        indexes = [
 
-    def save(self, *args, **kwargs):
+            models.Index(
+                fields=[
+                    "is_active",
+                    "is_available",
+                ]
+            ),
 
-        if not self.slug:
+            models.Index(
+                fields=[
+                    "is_featured",
+                ]
+            ),
 
-            self.slug = slugify(
-                self.title,
-                allow_unicode=True,
-            )
+        ]
 
-        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
 
         return reverse(
             "service_detail",
             kwargs={
-                "slug": self.slug,
-            },
+                "slug": self.slug
+            }
         )
 
-# ==========================================================
-# PORTFOLIO MODEL
-# ==========================================================
 
-class Portfolio(models.Model):
+    def clean(self):
 
-    service = models.ForeignKey(
-        Service,
-        on_delete=models.CASCADE,
-        related_name="portfolios",
-        verbose_name="سرویس",
-    )
+        if self.max_price and self.base_price > self.max_price:
 
-    title = models.CharField(
-        max_length=180,
-        db_index=True,
-        verbose_name="عنوان پروژه",
-    )
+            raise ValidationError(
+                "قیمت پایه نمی‌تواند بیشتر از حداکثر قیمت باشد."
+            )
 
-    slug = models.SlugField(
-        max_length=200,
-        unique=True,
-        allow_unicode=True,
-        db_index=True,
-        verbose_name="اسلاگ",
-    )
-
-    client = models.CharField(
-        max_length=150,
-        blank=True,
-        verbose_name="نام مشتری",
-    )
-
-    short_description = models.CharField(
-        max_length=250,
-        verbose_name="توضیح کوتاه",
-    )
-
-    description = models.TextField(
-        verbose_name="توضیح کامل",
-    )
-
-    image = models.ImageField(
-        upload_to=upload_to_portfolio,
-        verbose_name="تصویر اصلی",
-    )
-
-    gallery_image = models.ImageField(
-        upload_to=upload_to_portfolio,
-        blank=True,
-        null=True,
-        verbose_name="تصویر دوم",
-    )
-
-    technologies = models.CharField(
-        max_length=300,
-        blank=True,
-        verbose_name="تکنولوژی‌ها",
-        help_text="Python, Django, React, Bootstrap ...",
-    )
-
-    project_url = models.URLField(
-        blank=True,
-        verbose_name="آدرس پروژه",
-    )
-
-    github_url = models.URLField(
-        blank=True,
-        verbose_name="لینک GitHub",
-    )
-
-    featured = models.BooleanField(
-        default=False,
-        db_index=True,
-        verbose_name="پروژه ویژه",
-    )
-
-    active = models.BooleanField(
-        default=True,
-        db_index=True,
-        verbose_name="فعال",
-    )
-
-    views = models.PositiveIntegerField(
-        default=0,
-        verbose_name="تعداد بازدید",
-    )
-
-    sort_order = models.PositiveIntegerField(
-        default=0,
-        verbose_name="ترتیب نمایش",
-    )
-
-    seo_title = models.CharField(
-        max_length=200,
-        blank=True,
-        verbose_name="SEO Title",
-    )
-
-    seo_description = models.CharField(
-        max_length=300,
-        blank=True,
-        verbose_name="SEO Description",
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="تاریخ ایجاد",
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name="آخرین بروزرسانی",
-    )
-
-    class Meta:
-
-        verbose_name = "نمونه کار"
-
-        verbose_name_plural = "نمونه کارها"
-
-        ordering = ["sort_order", "-created_at"]
-
-        indexes = [
-            models.Index(fields=["slug"]),
-            models.Index(fields=["featured"]),
-            models.Index(fields=["active"]),
-            models.Index(fields=["created_at"]),
-        ]
 
     def __str__(self):
 
         return self.title
 
-    def save(self, *args, **kwargs):
+# ==========================================================
+# PORTFOLIO MODEL
+# ==========================================================
+def upload_to_portfolio(instance, filename):
+    return f"portfolio/{filename}"
 
-        if not self.slug:
+def upload_to_resumes(instance, filename):
+    return f"resumes/{filename}"
 
-            self.slug = slugify(
-                self.title,
-                allow_unicode=True,
-            )
+def upload_to_orders(instance, filename):
+    return os.path.join(
+        "orders/",
+        filename
+    )
 
-        super().save(*args, **kwargs)
+def upload_to_versions(instance, filename):
+    return os.path.join(
+        "versions/",
+        filename
+    )
+
+def upload_to_tickets(instance, filename):
+    return os.path.join(
+        "tickets/",
+        filename
+    )
+
+class Portfolio(SlugModel):
+
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="portfolios",
+        verbose_name="دسته‌بندی",
+    )
+
+    short_description = models.CharField(
+        max_length=300,
+        verbose_name="توضیح کوتاه",
+    )
+
+    views = models.PositiveIntegerField(
+        default=0
+    )
+
+    description = models.TextField(
+        verbose_name="توضیحات کامل",
+    )
+
+    client_name = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="نام مشتری",
+    )
+
+    client_company = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="شرکت مشتری",
+    )
+
+    website_url = models.URLField(
+        blank=True,
+        verbose_name="آدرس سایت",
+    )
+
+    technologies = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="تکنولوژی‌ها",
+    )
+
+    cover_image = models.ImageField(
+        upload_to=upload_portfolio_cover,
+        blank=True,
+        null=True,
+        validators=[
+            validate_portfolio_image,
+        ],
+        verbose_name="تصویر اصلی",
+    )
+
+
+    completed_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="تاریخ تکمیل",
+    )
+
+
+    project_url = models.URLField(
+        blank=True,
+        verbose_name="لینک پروژه",
+    )
+
+
+    github_url = models.URLField(
+        blank=True,
+        verbose_name="گیت‌هاب پروژه",
+    )
+
+
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="نمونه‌کار ویژه",
+    )
+
+
+    is_published = models.BooleanField(
+        default=True,
+        db_index=True,
+        verbose_name="منتشر شده",
+    )
+
+
+    views_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name="تعداد بازدید",
+    )
+
+
+    class Meta:
+
+        verbose_name = "نمونه‌کار"
+
+        verbose_name_plural = "نمونه‌کارها"
+
+        ordering = [
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "is_active",
+                    "is_published",
+                ]
+            ),
+
+            models.Index(
+                fields=[
+                    "is_featured",
+                ]
+            ),
+
+        ]
+
 
     def get_absolute_url(self):
 
         return reverse(
-
             "portfolio_detail",
-
             kwargs={
-
-                "slug": self.slug,
-
-            },
-
+                "slug": self.slug
+            }
         )
+
+
+    def increase_views(self):
+
+        self.views_count += 1
+
+        self.save(
+            update_fields=[
+                "views_count",
+            ]
+        )
+
+
+    def __str__(self):
+
+        return self.title
+
+# ==========================================================
+# PORTFOLIO IMAGE MODEL
+# ==========================================================
+
+class PortfolioImage(UUIDModel):
+
+    portfolio = models.ForeignKey(
+        Portfolio,
+        on_delete=models.CASCADE,
+        related_name="images",
+        verbose_name="نمونه‌کار",
+    )
+
+
+    image = models.ImageField(
+        upload_to=upload_portfolio_gallery,
+        validators=[
+            validate_portfolio_image,
+        ],
+        verbose_name="تصویر",
+    )
+
+
+    title = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="عنوان تصویر",
+    )
+
+
+    description = models.TextField(
+        blank=True,
+        verbose_name="توضیحات تصویر",
+    )
+
+
+    order = models.PositiveIntegerField(
+        default=0,
+        db_index=True,
+        verbose_name="ترتیب نمایش",
+    )
+
+
+    is_featured = models.BooleanField(
+        default=False,
+        verbose_name="تصویر اصلی گالری",
+    )
+
+
+    class Meta:
+
+        verbose_name = "تصویر نمونه‌کار"
+
+        verbose_name_plural = "تصاویر نمونه‌کار"
+
+        ordering = [
+            "order",
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "portfolio",
+                    "order",
+                ]
+            ),
+
+        ]
+
+
+    def __str__(self):
+
+        if self.title:
+
+            return self.title
+
+        return self.portfolio.title
 
 # ==========================================================
 # ORDER MODEL
 # ==========================================================
 
-class Order(models.Model):
+class Order(UUIDModel):
+
+    STATUS_CHOICES = (
+
+        ("pending", "در انتظار بررسی"),
+
+        ("approved", "تایید شده"),
+
+        ("planning", "برنامه‌ریزی"),
+
+        ("development", "در حال توسعه"),
+
+        ("review", "بازبینی مشتری"),
+
+        ("completed", "تکمیل شده"),
+
+        ("cancelled", "لغو شده"),
+    )
+
+    PRIORITY_CHOICES = (
+
+        ("low", "کم"),
+
+        ("normal", "عادی"),
+
+        ("high", "زیاد"),
+
+        ("urgent", "فوری"),
+    )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.CASCADE,
         related_name="orders",
         verbose_name="کاربر",
     )
 
     service = models.ForeignKey(
         Service,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="orders",
         verbose_name="سرویس",
+    )
+
+    name = models.CharField(
+        max_length=100,
+        verbose_name="نام مشتری",
+    )
+
+    phone = models.CharField(
+        max_length=11,
+        validators=[
+            phone_validator,
+        ],
+        verbose_name="شماره موبایل",
+    )
+
+    attachment = models.FileField(
+            upload_to="orders/attachments/",
+            blank=True,
+            null=True,
+            verbose_name="فایل پیوست"
+        )
+
+    email = models.EmailField(
+        blank=True,
+        verbose_name="ایمیل",
+    )
+
+    title = models.CharField(
+        max_length=200,
+        verbose_name="عنوان پروژه",
+    )
+
+    description = models.TextField(
+        verbose_name="توضیحات سفارش",
+    )
+
+    estimated_price = models.PositiveBigIntegerField(
+        default=0,
+        verbose_name="هزینه تخمینی",
+    )
+
+    final_price = models.PositiveBigIntegerField(
+        default=0,
+        verbose_name="هزینه نهایی",
+    )
+
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default="pending",
+        db_index=True,
+        verbose_name="وضعیت",
+    )
+
+    priority = models.CharField(
+        max_length=20,
+        choices=PRIORITY_CHOICES,
+        default="normal",
+        db_index=True,
+        verbose_name="اولویت",
     )
 
     tracking_code = models.CharField(
         max_length=20,
         unique=True,
-        db_index=True,
         editable=False,
-        verbose_name="کد رهگیری",
-    )
-
-    website = models.URLField(
-    blank=True,
-    verbose_name="وب سایت",
-    )
-
-    telegram = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="تلگرام",
-    )
-
-    budget = models.PositiveBigIntegerField(
-        default=0,
-        verbose_name="بودجه",
-    )
-
-    deadline = models.DateField(
-        blank=True,
-        null=True,
-        verbose_name="ددلاین",
-    )
-
-    full_name = models.CharField(
-        max_length=150,
-        db_index=True,
-        verbose_name="نام کامل",
-    )
-
-    email = models.EmailField(
-        verbose_name="ایمیل",
-    )
-
-    phone = models.CharField(
-        max_length=20,
-        db_index=True,
-        verbose_name="شماره تماس",
-    )
-
-    company = models.CharField(
-        max_length=150,
-        blank=True,
-        verbose_name="نام شرکت",
-    )
-
-    description = models.TextField(
-        verbose_name="توضیحات پروژه",
-    )
-
-    attachment = models.FileField(
-        upload_to=upload_to_orders,
-        blank=True,
-        null=True,
         validators=[
-            validate_file_size,
-            FileExtensionValidator(
-                allowed_extensions=[
-                    "pdf",
-                    "doc",
-                    "docx",
-                    "zip",
-                    "rar",
-                    "png",
-                    "jpg",
-                    "jpeg",
-                    "fig",
-                    "xd",
-                    "psd",
-                ]
-            )
+            tracking_code_validator,
         ],
-        verbose_name="فایل پیوست",
+        verbose_name="کد پیگیری",
     )
 
-    estimated_price = models.PositiveIntegerField(
-        default=0,
-        verbose_name="هزینه تقریبی",
-    )
-
-    final_price = models.PositiveIntegerField(
-        default=0,
-        verbose_name="هزینه نهایی",
-    )
-
-    estimated_days = models.PositiveSmallIntegerField(
-        default=7,
-        verbose_name="زمان تقریبی اجرا",
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=OrderStatus.choices,
-        default=OrderStatus.PENDING,
-        db_index=True,
-        verbose_name="وضعیت",
-    )
-
-    progress = models.PositiveSmallIntegerField(
-        default=0,
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(100),
-        ],
-        verbose_name="درصد پیشرفت",
-    )
-
-    client_seen = models.BooleanField(
-        default=False,
-        verbose_name="مشاهده توسط مشتری",
-    )
-
-    admin_note = models.TextField(
+    developers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
         blank=True,
-        verbose_name="یادداشت مدیریت",
+        related_name="assigned_orders",
+        verbose_name="توسعه‌دهندگان",
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        db_index=True,
-        verbose_name="تاریخ ثبت",
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name="آخرین بروزرسانی",
+    started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="شروع پروژه",
     )
 
     completed_at = models.DateTimeField(
-        blank=True,
         null=True,
-        verbose_name="تاریخ تکمیل",
+        blank=True,
+        verbose_name="اتمام پروژه",
     )
+
 
     class Meta:
 
@@ -599,478 +993,624 @@ class Order(models.Model):
 
         verbose_name_plural = "سفارش‌ها"
 
-        ordering = ["-created_at"]
-
-        indexes = [
-            models.Index(fields=["tracking_code"]),
-            models.Index(fields=["status"]),
-            models.Index(fields=["created_at"]),
-            models.Index(fields=["user"]),
+        ordering = [
+            "-created_at",
         ]
 
-    @property
-    def remaining_days(self):
 
-        if not self.deadline:
-            return None
+        indexes = [
 
-        return (self.deadline - timezone.now().date()).days
+            models.Index(
+                fields=[
+                    "status",
+                    "priority",
+                ]
+            ),
 
-    def __str__(self):
+            models.Index(
+                fields=[
+                    "user",
+                    "-created_at",
+                ]
+            ),
 
-        return f"{self.tracking_code} - {self.full_name}"
+        ]
 
-    def save(self, *args, **kwargs):
+
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
 
         if not self.tracking_code:
 
-            self.tracking_code = uuid4().hex[:10].upper()
+            self.tracking_code = generate_tracking_code()
 
-        if (
-            self.status == OrderStatus.COMPLETED
-            and self.completed_at is None
-        ):
-            self.completed_at = timezone.now()
 
-        super().save(*args, **kwargs)
+        super().save(
+            *args,
+            **kwargs
+        )
 
-    def get_absolute_url(self):
 
-        return reverse(
-            "order_detail",
-            kwargs={
-                "tracking_code": self.tracking_code,
-            },
+    def clean(self):
+
+        if self.final_price and self.final_price < self.estimated_price:
+
+            raise ValidationError(
+                "هزینه نهایی نمی‌تواند کمتر از هزینه تخمینی باشد."
+            )
+
+
+    def __str__(self):
+
+        return (
+            f"{self.title} - "
+            f"{self.tracking_code}"
         )
 
 # ==========================================================
-# CAREER MODEL
+# ORDER FILE MODEL
 # ==========================================================
 
-class Career(models.Model):
+class OrderFile(UUIDModel):
+
+    FILE_TYPE_CHOICES = (
+
+        ("document", "سند"),
+
+        ("design", "طراحی"),
+
+        ("source", "سورس"),
+
+        ("image", "تصویر"),
+
+        ("archive", "فایل فشرده"),
+
+        ("other", "سایر"),
+
+    )
+
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="files",
+        verbose_name="سفارش",
+    )
+
+
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="uploaded_order_files",
+        verbose_name="آپلود کننده",
+    )
+
+
+    file = models.FileField(
+        upload_to=upload_order_file,
+        validators=[
+            validate_document,
+        ],
+        verbose_name="فایل",
+    )
+
 
     title = models.CharField(
-        max_length=150,
-        unique=True,
-        db_index=True,
-        verbose_name="عنوان شغل",
+        max_length=200,
+        verbose_name="عنوان فایل",
     )
 
-    slug = models.SlugField(
-        unique=True,
-        allow_unicode=True,
-        db_index=True,
-    )
 
-    short_description = models.CharField(
-        max_length=250,
-        verbose_name="توضیح کوتاه",
-    )
-
-    description = models.TextField(
-        verbose_name="شرح کامل",
-    )
-
-    requirements = models.TextField(
-        blank=True,
-        verbose_name="شرایط استخدام",
-    )
-
-    responsibilities = models.TextField(
-        blank=True,
-        verbose_name="وظایف",
-    )
-
-    benefits = models.TextField(
-        blank=True,
-        verbose_name="مزایا",
-    )
-
-    salary = models.CharField(
-        max_length=120,
-        blank=True,
-        verbose_name="حقوق",
-    )
-
-    location = models.CharField(
-        max_length=120,
-        blank=True,
-        verbose_name="محل کار",
-    )
-
-    work_type = models.CharField(
-        max_length=80,
-        default="Remote",
-        verbose_name="نوع همکاری",
-    )
-
-    experience = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="سابقه مورد نیاز",
-    )
-
-    vacancies = models.PositiveIntegerField(
-        default=1,
-        verbose_name="تعداد ظرفیت",
-    )
-
-    active = models.BooleanField(
-        default=True,
-        db_index=True,
-        verbose_name="فعال",
-    )
-
-    featured = models.BooleanField(
-        default=False,
-        verbose_name="ویژه",
-    )
-
-    sort_order = models.PositiveIntegerField(
-        default=0,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
-
-    class Meta:
-
-        ordering = [
-
-            "sort_order",
-
-            "-created_at",
-
-        ]
-
-        verbose_name = "فرصت شغلی"
-
-        verbose_name_plural = "فرصت‌های شغلی"
-
-    def __str__(self):
-
-        return self.title
-
-    def save(self, *args, **kwargs):
-
-        if not self.slug:
-
-            self.slug = slugify(
-
-                self.title,
-
-                allow_unicode=True,
-
-            )
-
-        super().save(*args, **kwargs)
-
-
-# ==========================================================
-# JOB APPLICATION MODEL
-# ==========================================================
-
-class JobApplication(models.Model):
-
-    career = models.ForeignKey(
-
-        Career,
-
-        on_delete=models.CASCADE,
-
-        related_name="applications",
-
-    )
-
-    full_name = models.CharField(
-
-        max_length=150,
-
-        db_index=True,
-
-    )
-
-    email = models.EmailField()
-
-    phone = models.CharField(
-
+    file_type = models.CharField(
         max_length=20,
-
-    )
-
-    city = models.CharField(
-
-        max_length=100,
-
-        blank=True,
-
-    )
-
-    age = models.PositiveSmallIntegerField(
-
-        blank=True,
-
-        null=True,
-
-    )
-
-    experience = models.CharField(
-
-        max_length=150,
-
-        blank=True,
-
-    )
-
-    github = models.URLField(
-
-        blank=True,
-
-    )
-
-    linkedin = models.URLField(
-
-        blank=True,
-
-    )
-
-    portfolio = models.URLField(
-
-        blank=True,
-
-    )
-
-    website = models.URLField(
-
-        blank=True,
-
-    )
-
-    resume = models.FileField(
-
-        upload_to=upload_to_resumes,
-
-        validators=[
-
-            validate_file_size,
-
-            FileExtensionValidator(
-
-                [
-
-                    "pdf",
-
-                    "doc",
-
-                    "docx",
-
-                ]
-
-            ),
-
-        ],
-
-    )
-
-    cover_letter = models.TextField(
-
-        blank=True,
-
-    )
-
-    reviewed = models.BooleanField(
-
-        default=False,
-
-    )
-
-    accepted = models.BooleanField(
-
-        default=False,
-
-    )
-
-    rejected = models.BooleanField(
-
-        default=False,
-
-    )
-
-    created_at = models.DateTimeField(
-
-        auto_now_add=True,
-
-    )
-
-    class Meta:
-
-        ordering = [
-
-            "-created_at",
-
-        ]
-
-        verbose_name = "درخواست همکاری"
-
-        verbose_name_plural = "درخواست‌های همکاری"
-
-    def __str__(self):
-
-        return f"{self.full_name} - {self.career}"
-
-# ==========================================================
-# DEPARTMENT
-# ==========================================================
-
-class Department(models.Model):
-
-    name = models.CharField(
-        max_length=150,
-        unique=True,
+        choices=FILE_TYPE_CHOICES,
+        default="other",
         db_index=True,
-        verbose_name="نام دپارتمان",
+        verbose_name="نوع فایل",
     )
+
 
     description = models.TextField(
         blank=True,
         verbose_name="توضیحات",
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
+
+    size = models.PositiveBigIntegerField(
+        default=0,
+        editable=False,
+        verbose_name="حجم فایل",
     )
+
+
+    is_public = models.BooleanField(
+        default=False,
+        verbose_name="قابل نمایش برای مشتری",
+    )
+
 
     class Meta:
 
-        verbose_name = "دپارتمان"
-        verbose_name_plural = "دپارتمان‌ها"
-        ordering = ["name"]
+        verbose_name = "فایل سفارش"
+
+        verbose_name_plural = "فایل‌های سفارش"
+
+        ordering = [
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "order",
+                    "file_type",
+                ]
+            ),
+
+        ]
+
+
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
+
+        if self.file:
+
+            self.size = self.file.size
+
+
+        super().save(
+            *args,
+            **kwargs
+        )
+
 
     def __str__(self):
-        return self.name
 
+        return self.title
 
 # ==========================================================
-# EMPLOYEE
+# TICKET MODEL
 # ==========================================================
 
-class Employee(models.Model):
+class Ticket(UUIDModel):
 
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="core_employee",
+    STATUS_CHOICES = (
+
+        ("open", "باز"),
+
+        ("pending", "در انتظار پاسخ"),
+
+        ("answered", "پاسخ داده شده"),
+
+        ("closed", "بسته شده"),
+
+        ("resolved", "حل شده"),
+
     )
 
-    department = models.ForeignKey(
-        Department,
+
+    PRIORITY_CHOICES = (
+
+        ("low", "کم"),
+
+        ("normal", "عادی"),
+
+        ("high", "زیاد"),
+
+        ("urgent", "فوری"),
+
+    )
+
+
+    CATEGORY_CHOICES = (
+
+        ("technical", "فنی"),
+
+        ("billing", "مالی"),
+
+        ("support", "پشتیبانی"),
+
+        ("project", "پروژه"),
+
+        ("other", "سایر"),
+
+    )
+
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="tickets",
+        verbose_name="کاربر",
+    )
+
+
+    order = models.ForeignKey(
+        Order,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="employees",
+        related_name="tickets",
+        verbose_name="سفارش مرتبط",
     )
 
-    position = models.CharField(
-        max_length=150,
-    )
 
-    salary = models.PositiveIntegerField(
-        default=0,
-    )
-
-    hire_date = models.DateField()
-
-    active = models.BooleanField(
-        default=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "کارمند"
-        verbose_name_plural = "کارمندان"
-
-    def __str__(self):
-        return f"{self.user.username} - {self.position}"
-
-
-# ==========================================================
-# USER PROFILE
-# ==========================================================
-
-class UserProfile(models.Model):
-
-    user = models.OneToOneField(
+    assigned_to = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="core_profile",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assigned_tickets",
+        verbose_name="مسئول رسیدگی",
     )
 
-    avatar = models.ImageField(
-        upload_to="profiles/",
+    department = models.CharField(
+        max_length=100,
+        verbose_name="بخش مربوطه"
+    )
+
+    department = models.CharField(
+        max_length=50,
+        choices=[
+            ("support", "پشتیبانی"),
+            ("technical", "فنی"),
+            ("billing", "مالی"),
+            ("sales", "فروش"),
+        ],
+        default="support",
+        verbose_name="بخش"
+    )
+
+
+    attachment = models.FileField(
+        upload_to="tickets/attachments/",
         blank=True,
         null=True,
+        verbose_name="فایل پیوست"
     )
 
-    phone = models.CharField(
+    attachment = models.FileField(
+        upload_to="tickets/",
+        blank=True,
+        null=True,
+        verbose_name="فایل پیوست"
+    )
+
+    ticket_number = models.CharField(
+        max_length=30,
+        unique=True,
+        editable=False,
+        verbose_name="شماره تیکت",
+    )
+
+
+    subject = models.CharField(
+        max_length=255,
+        verbose_name="موضوع",
+    )
+
+
+    message = models.TextField(
+        verbose_name="متن پیام",
+    )
+
+    department = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="دپارتمان"
+    )
+
+
+    attachment = models.FileField(
+        upload_to="tickets/attachments/",
+        blank=True,
+        null=True,
+        validators=[
+            validate_document,
+        ],
+        verbose_name="فایل پیوست"
+    )
+
+    category = models.CharField(
         max_length=20,
-        blank=True,
+        choices=CATEGORY_CHOICES,
+        default="support",
+        db_index=True,
+        verbose_name="دسته‌بندی",
     )
 
-    birthday = models.DateField(
-        blank=True,
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="open",
+        db_index=True,
+        verbose_name="وضعیت",
+    )
+
+
+    priority = models.CharField(
+        max_length=20,
+        choices=PRIORITY_CHOICES,
+        default="normal",
+        db_index=True,
+        verbose_name="اولویت",
+    )
+
+
+    last_reply_at = models.DateTimeField(
         null=True,
-    )
-
-    address = models.TextField(
         blank=True,
+        verbose_name="آخرین پاسخ",
     )
 
-    website = models.URLField(
+
+    closed_at = models.DateTimeField(
+        null=True,
         blank=True,
+        verbose_name="زمان بسته شدن",
     )
 
-    github = models.URLField(
-        blank=True,
-    )
-
-    linkedin = models.URLField(
-        blank=True,
-    )
-
-    bio = models.TextField(
-        blank=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
 
     class Meta:
 
-        verbose_name = "پروفایل کاربر"
-        verbose_name_plural = "پروفایل کاربران"
+        verbose_name = "تیکت"
+
+        verbose_name_plural = "تیکت‌ها"
+
+        ordering = [
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "status",
+                    "priority",
+                ]
+            ),
+
+            models.Index(
+                fields=[
+                    "user",
+                    "-created_at",
+                ]
+            ),
+
+        ]
+
+
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
+
+        if not self.ticket_number:
+
+            self.ticket_number = generate_ticket_number()
+
+
+        super().save(
+            *args,
+            **kwargs
+        )
+
 
     def __str__(self):
-        return self.user.username
+
+        return (
+            f"{self.ticket_number} - "
+            f"{self.subject}"
+        )
 
 # ==========================================================
-# INVOICE
+# TICKET REPLY MODEL
 # ==========================================================
 
-class Invoice(models.Model):
+class TicketReply(UUIDModel):
+
+    ticket = models.ForeignKey(
+        Ticket,
+        on_delete=models.CASCADE,
+        related_name="replies",
+        verbose_name="تیکت",
+    )
+
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ticket_replies",
+        verbose_name="کاربر",
+    )
+
+
+    message = models.TextField(
+        verbose_name="متن پاسخ",
+    )
+
+
+    is_staff_reply = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="پاسخ تیم",
+    )
+
+
+    is_internal = models.BooleanField(
+        default=False,
+        verbose_name="یادداشت داخلی",
+    )
+
+
+    class Meta:
+
+        verbose_name = "پاسخ تیکت"
+
+        verbose_name_plural = "پاسخ‌های تیکت"
+
+        ordering = [
+            "created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "ticket",
+                    "created_at",
+                ]
+            ),
+
+        ]
+
+
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
+
+        self.ticket.last_reply_at = timezone.now()
+
+        self.ticket.save(
+            update_fields=[
+                "last_reply_at",
+            ]
+        )
+
+
+        super().save(
+            *args,
+            **kwargs
+        )
+
+
+    def __str__(self):
+
+        return (
+            f"Reply - "
+            f"{self.ticket.ticket_number}"
+        )
+
+
+
+# ==========================================================
+# TICKET ATTACHMENT MODEL
+# ==========================================================
+
+class TicketAttachment(UUIDModel):
+
+    ticket = models.ForeignKey(
+        Ticket,
+        on_delete=models.CASCADE,
+        related_name="attachments",
+        verbose_name="تیکت",
+    )
+
+
+    reply = models.ForeignKey(
+        TicketReply,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="attachments",
+        verbose_name="پاسخ مرتبط",
+    )
+
+
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ticket_attachments",
+        verbose_name="آپلود کننده",
+    )
+
+
+    file = models.FileField(
+        upload_to=upload_ticket_attachment,
+        validators=[
+            validate_document,
+        ],
+        verbose_name="فایل",
+    )
+
+
+    title = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="عنوان فایل",
+    )
+
+
+    class Meta:
+
+        verbose_name = "فایل تیکت"
+
+        verbose_name_plural = "فایل‌های تیکت"
+
+        ordering = [
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "ticket",
+                    "-created_at",
+                ]
+            ),
+
+        ]
+
+
+    def __str__(self):
+
+        return (
+            self.title
+            or self.file.name
+        )
+
+# ==========================================================
+# INVOICE MODEL
+# ==========================================================
+
+class Invoice(UUIDModel):
+
+    STATUS_CHOICES = (
+
+        ("draft", "پیش‌نویس"),
+
+        ("issued", "صادر شده"),
+
+        ("sent", "ارسال شده"),
+
+        ("paid", "پرداخت شده"),
+
+        ("cancelled", "لغو شده"),
+
+    )
+
 
     order = models.OneToOneField(
         Order,
@@ -1079,44 +1619,28 @@ class Invoice(models.Model):
         verbose_name="سفارش",
     )
 
+
     invoice_number = models.CharField(
-        max_length=30,
+        max_length=50,
         unique=True,
-        db_index=True,
+        editable=False,
+        validators=[
+            invoice_number_validator,
+        ],
         verbose_name="شماره فاکتور",
     )
 
-    amount = models.PositiveIntegerField(
-        default=0,
-        verbose_name="مبلغ",
-    )
-
-    tax = models.PositiveIntegerField(
-        default=0,
-        verbose_name="مالیات",
-    )
-
-    discount = models.PositiveIntegerField(
-        default=0,
-        verbose_name="تخفیف",
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=InvoiceStatus.choices,
-        default=InvoiceStatus.UNPAID,
-        db_index=True,
-        verbose_name="وضعیت",
-    )
-
-    due_date = models.DateField(
-        verbose_name="تاریخ سررسید",
-    )
-
-    paid_at = models.DateTimeField(
+    pdf = models.FileField(
+        upload_to="invoices/",
         blank=True,
         null=True,
-        verbose_name="تاریخ پرداخت",
+        verbose_name="فایل PDF فاکتور"
+    )
+
+    title = models.CharField(
+        max_length=255,
+        default="Nexora Web Service Invoice",
+        verbose_name="عنوان فاکتور",
     )
 
     description = models.TextField(
@@ -1124,13 +1648,54 @@ class Invoice(models.Model):
         verbose_name="توضیحات",
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
+
+    amount = models.PositiveBigIntegerField(
+        default=0,
+        verbose_name="مبلغ",
     )
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
+
+    discount = models.PositiveBigIntegerField(
+        default=0,
+        verbose_name="تخفیف",
     )
+
+
+    tax = models.PositiveBigIntegerField(
+        default=0,
+        verbose_name="مالیات",
+    )
+
+
+    final_amount = models.PositiveBigIntegerField(
+        default=0,
+        editable=False,
+        verbose_name="مبلغ نهایی",
+    )
+
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+        db_index=True,
+        verbose_name="وضعیت",
+    )
+
+
+    issued_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="تاریخ صدور",
+    )
+
+
+    due_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="مهلت پرداخت",
+    )
+
 
     class Meta:
 
@@ -1142,1006 +1707,305 @@ class Invoice(models.Model):
             "-created_at",
         ]
 
-    def save(self, *args, **kwargs):
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "status",
+                    "-created_at",
+                ]
+            ),
+
+        ]
+
+
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
 
         if not self.invoice_number:
 
-            self.invoice_number = (
-                f"INV-{timezone.now().strftime('%Y%m%d')}-{uuid4().hex[:6].upper()}"
-            )
+            self.invoice_number = generate_invoice_number()
 
-        super().save(*args, **kwargs)
+
+        self.final_amount = (
+            self.amount
+            - self.discount
+            + self.tax
+        )
+
+
+        if not self.issued_at:
+
+            self.issued_at = timezone.now()
+
+
+        super().save(
+            *args,
+            **kwargs
+        )
+
 
     def __str__(self):
 
         return self.invoice_number
 
 # ==========================================================
-# PAYMENT
+# PAYMENT MODEL
 # ==========================================================
 
-class Payment(models.Model):
+class Payment(UUIDModel):
 
-    invoice = models.ForeignKey(
-        Invoice,
+    STATUS_CHOICES = (
+
+        ("pending", "در انتظار پرداخت"),
+
+        ("processing", "در حال پردازش"),
+
+        ("paid", "پرداخت موفق"),
+
+        ("failed", "ناموفق"),
+
+        ("cancelled", "لغو شده"),
+
+        ("refunded", "بازگشت وجه"),
+
+    )
+
+
+    METHOD_CHOICES = (
+
+        ("gateway", "درگاه پرداخت"),
+
+        ("card", "کارت به کارت"),
+
+        ("crypto", "ارز دیجیتال"),
+
+        ("cash", "نقدی"),
+
+        ("other", "سایر"),
+
+    )
+
+
+    order = models.ForeignKey(
+        Order,
         on_delete=models.CASCADE,
         related_name="payments",
-    )
-
-    amount = models.PositiveIntegerField()
-
-    authority = models.CharField(
-        max_length=120,
-        blank=True,
-    )
-
-    ref_id = models.CharField(
-        max_length=120,
-        blank=True,
+        verbose_name="سفارش",
     )
 
     gateway = models.CharField(
         max_length=50,
-        default="Zarinpal",
+        blank=True,
+        verbose_name="درگاه پرداخت",
     )
 
-    successful = models.BooleanField(
-        default=False,
+    invoice = models.ForeignKey(
+        Invoice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments",
+        verbose_name="فاکتور",
     )
+
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments",
+        verbose_name="کاربر",
+    )
+
+
+    amount = models.PositiveBigIntegerField(
+        default=0,
+        verbose_name="مبلغ پرداختی",
+    )
+
+
+    transaction_id = models.CharField(
+        max_length=255,
+        blank=True,
+        db_index=True,
+        verbose_name="شناسه تراکنش",
+    )
+
+
+    gateway_name = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="نام درگاه",
+    )
+
+
+    payment_method = models.CharField(
+        max_length=20,
+        choices=METHOD_CHOICES,
+        default="gateway",
+        verbose_name="روش پرداخت",
+    )
+
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+        db_index=True,
+        verbose_name="وضعیت",
+    )
+
 
     paid_at = models.DateTimeField(
-        blank=True,
         null=True,
+        blank=True,
+        verbose_name="زمان پرداخت",
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="اطلاعات اضافی",
     )
+
 
     class Meta:
 
         verbose_name = "پرداخت"
+
         verbose_name_plural = "پرداخت‌ها"
-        ordering = ["-created_at"]
-
-    def __str__(self):
-
-        return f"{self.invoice.invoice_number}"
-
-
-# ==========================================================
-# CONTRACT
-# ==========================================================
-
-class Contract(models.Model):
-
-    order = models.OneToOneField(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="contract",
-    )
-
-    title = models.CharField(
-        max_length=200,
-    )
-
-    file = models.FileField(
-        upload_to="contracts/",
-        blank=True,
-        null=True,
-    )
-
-    signed_by_client = models.BooleanField(
-        default=False,
-    )
-
-    signed_by_company = models.BooleanField(
-        default=False,
-    )
-
-    signed_at = models.DateTimeField(
-        blank=True,
-        null=True,
-    )
-
-    expires_at = models.DateField(
-        blank=True,
-        null=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "قرارداد"
-        verbose_name_plural = "قراردادها"
-
-    def __str__(self):
-
-        return self.title
-
-# ==========================================================
-# TEAM
-# ==========================================================
-
-class Team(models.Model):
-
-    full_name = models.CharField(
-        max_length=150,
-    )
-
-    position = models.CharField(
-        max_length=150,
-    )
-
-    image = models.ImageField(
-        upload_to="team/",
-        blank=True,
-        null=True,
-    )
-
-    bio = models.TextField(
-        blank=True,
-    )
-
-    github = models.URLField(
-        blank=True,
-    )
-
-    linkedin = models.URLField(
-        blank=True,
-    )
-
-    email = models.EmailField(
-        blank=True,
-    )
-
-    active = models.BooleanField(
-        default=True,
-    )
-
-    sort_order = models.PositiveIntegerField(
-        default=0,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "عضو تیم"
-        verbose_name_plural = "اعضای تیم"
-
-        ordering = [
-            "sort_order",
-        ]
-
-    def __str__(self):
-
-        return self.full_name
-
-
-# ==========================================================
-# PARTNER
-# ==========================================================
-
-class Partner(models.Model):
-
-    name = models.CharField(
-        max_length=150,
-    )
-
-    logo = models.ImageField(
-        upload_to="partners/",
-    )
-
-    website = models.URLField(
-        blank=True,
-    )
-
-    active = models.BooleanField(
-        default=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "همکار"
-        verbose_name_plural = "همکاران"
-
-    def __str__(self):
-
-        return self.name
-
-
-# ==========================================================
-# FAQ
-# ==========================================================
-
-class FAQ(models.Model):
-
-    question = models.CharField(
-        max_length=300,
-    )
-
-    answer = models.TextField()
-
-    active = models.BooleanField(
-        default=True,
-    )
-
-    sort_order = models.PositiveIntegerField(
-        default=0,
-    )
-
-    class Meta:
-
-        verbose_name = "سوال متداول"
-        verbose_name_plural = "سوالات متداول"
-
-        ordering = [
-            "sort_order",
-        ]
-
-    def __str__(self):
-
-        return self.question
-
-# ==========================================================
-# API KEY
-# ==========================================================
-
-class APIKey(models.Model):
-
-    name = models.CharField(
-        max_length=150,
-    )
-
-    key = models.CharField(
-        max_length=64,
-        unique=True,
-        db_index=True,
-    )
-
-    active = models.BooleanField(
-        default=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    expires_at = models.DateTimeField(
-        blank=True,
-        null=True,
-    )
-
-    class Meta:
-
-        verbose_name = "API Key"
-        verbose_name_plural = "API Keys"
-
-    def __str__(self):
-        return self.name
-
-
-# ==========================================================
-# ACTIVITY LOG
-# ==========================================================
-
-class ActivityLog(models.Model):
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-
-    action = models.CharField(
-        max_length=200,
-    )
-
-    ip_address = models.GenericIPAddressField(
-        blank=True,
-        null=True,
-    )
-
-    user_agent = models.TextField(
-        blank=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "لاگ فعالیت"
-        verbose_name_plural = "لاگ فعالیت‌ها"
 
         ordering = [
             "-created_at",
         ]
 
-    def __str__(self):
-        return self.action
-
-
-# ==========================================================
-# LOGIN HISTORY
-# ==========================================================
-
-class LoginHistory(models.Model):
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="login_history",
-    )
-
-    ip_address = models.GenericIPAddressField()
-
-    user_agent = models.TextField(
-        blank=True,
-    )
-
-    successful = models.BooleanField(
-        default=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "تاریخچه ورود"
-        verbose_name_plural = "تاریخچه ورود"
-
-        ordering = [
-            "-created_at",
-        ]
-
-    def __str__(self):
-        return str(self.user)
-
-
-# ==========================================================
-# SITE SETTINGS
-# ==========================================================
-
-class SiteSetting(models.Model):
-
-    site_name = models.CharField(
-        max_length=150,
-    )
-
-    logo = models.ImageField(
-        upload_to="settings/",
-        blank=True,
-        null=True,
-    )
-
-    favicon = models.ImageField(
-        upload_to="settings/",
-        blank=True,
-        null=True,
-    )
-
-    email = models.EmailField(
-        blank=True,
-    )
-
-    phone = models.CharField(
-        max_length=30,
-        blank=True,
-    )
-
-    address = models.TextField(
-        blank=True,
-    )
-
-    telegram = models.URLField(
-        blank=True,
-    )
-
-    instagram = models.URLField(
-        blank=True,
-    )
-
-    github = models.URLField(
-        blank=True,
-    )
-
-    linkedin = models.URLField(
-        blank=True,
-    )
-
-    maintenance_mode = models.BooleanField(
-        default=False,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
-
-    class Meta:
-
-        verbose_name = "تنظیمات سایت"
-        verbose_name_plural = "تنظیمات سایت"
-
-    def __str__(self):
-        return self.site_name
-
-# ==========================================================
-# CONTACT MODEL
-# ==========================================================
-
-class Contact(models.Model):
-
-    full_name = models.CharField(
-        max_length=150,
-        db_index=True,
-        verbose_name="نام کامل",
-    )
-
-    email = models.EmailField(
-        verbose_name="ایمیل",
-    )
-
-    phone = models.CharField(
-        max_length=20,
-        blank=True,
-        verbose_name="شماره تماس",
-    )
-
-    company = models.CharField(
-        max_length=150,
-        blank=True,
-        verbose_name="شرکت",
-    )
-
-    subject = models.CharField(
-        max_length=200,
-        verbose_name="موضوع",
-    )
-
-    message = models.TextField(
-        verbose_name="پیام",
-    )
-
-    is_read = models.BooleanField(
-        default=False,
-        db_index=True,
-        verbose_name="خوانده شده",
-    )
-
-    ip_address = models.GenericIPAddressField(
-        blank=True,
-        null=True,
-        verbose_name="IP",
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="تاریخ ثبت",
-    )
-
-    class Meta:
-
-        verbose_name = "پیام تماس"
-
-        verbose_name_plural = "پیام‌های تماس"
-
-        ordering = ["-created_at"]
 
         indexes = [
-            models.Index(fields=["created_at"]),
-            models.Index(fields=["is_read"]),
-        ]
 
-    def __str__(self):
-
-        return self.full_name
-
-
-# ==========================================================
-# TICKET MODEL
-# ==========================================================
-
-class Ticket(models.Model):
-
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="tickets",
-        verbose_name="سفارش",
-    )
-
-    sender = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="tickets",
-        verbose_name="ارسال کننده",
-    )
-
-    message = models.TextField(
-        verbose_name="پیام",
-    )
-
-    attachment = models.FileField(
-        upload_to=upload_to_tickets,
-        blank=True,
-        null=True,
-        validators=[
-            validate_file_size,
-            FileExtensionValidator(
-                [
-                    "pdf",
-                    "zip",
-                    "rar",
-                    "png",
-                    "jpg",
-                    "jpeg",
-                    "doc",
-                    "docx",
+            models.Index(
+                fields=[
+                    "status",
+                    "-created_at",
                 ]
             ),
-        ],
-        verbose_name="فایل پیوست",
-    )
 
-    is_admin = models.BooleanField(
-        default=False,
-        db_index=True,
-        verbose_name="پیام مدیریت",
-    )
+            models.Index(
+                fields=[
+                    "transaction_id",
+                ]
+            ),
 
-    is_read = models.BooleanField(
-        default=False,
-        db_index=True,
-        verbose_name="خوانده شده",
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="تاریخ ارسال",
-    )
-
-    class Meta:
-
-        verbose_name = "تیکت"
-
-        verbose_name_plural = "تیکت‌ها"
-
-        ordering = ["created_at"]
-
-        indexes = [
-            models.Index(fields=["created_at"]),
-            models.Index(fields=["is_read"]),
-            models.Index(fields=["is_admin"]),
         ]
+
+
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
+
+        if self.status == "paid" and not self.paid_at:
+
+            self.paid_at = timezone.now()
+
+
+        super().save(
+            *args,
+            **kwargs
+        )
+
 
     def __str__(self):
 
-        return f"{self.order.tracking_code} - {self.sender}"
+        return (
+            f"{self.order.title} - "
+            f"{self.amount}"
+        )
 
 # ==========================================================
-# PROJECT PROGRESS
+# NOTIFICATION MODEL
 # ==========================================================
 
-class ProjectProgress(models.Model):
+class Notification(UUIDModel):
 
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="progresses",
+    TYPE_CHOICES = (
+
+        ("order", "سفارش"),
+
+        ("payment", "پرداخت"),
+
+        ("ticket", "تیکت"),
+
+        ("project", "پروژه"),
+
+        ("security", "امنیتی"),
+
+        ("system", "سیستم"),
+
     )
 
-    title = models.CharField(
-        max_length=200,
-    )
-
-    description = models.TextField(
-        blank=True,
-    )
-
-    progress = models.PositiveSmallIntegerField(
-        default=0,
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(100),
-        ],
-    )
-
-    completed = models.BooleanField(
-        default=False,
-    )
-
-    is_visible_to_client = models.BooleanField(
-        default=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "پیشرفت پروژه"
-
-        verbose_name_plural = "پیشرفت پروژه"
-
-        ordering = [
-            "-created_at",
-        ]
-
-    def __str__(self):
-
-        return f"{self.order.tracking_code} - {self.title}"
-
-
-# ==========================================================
-# PROJECT TIMELINE
-# ==========================================================
-
-class ProjectTimeline(models.Model):
-
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="timeline",
-    )
-
-    title = models.CharField(
-        max_length=200,
-    )
-
-    description = models.TextField(
-        blank=True,
-    )
-
-    event_date = models.DateTimeField()
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "تایم لاین"
-
-        verbose_name_plural = "تایم لاین پروژه"
-
-        ordering = [
-            "event_date",
-        ]
-
-    def __str__(self):
-
-        return self.title
-
-
-# ==========================================================
-# PROJECT TASK
-# ==========================================================
-
-class ProjectTask(models.Model):
-
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="tasks",
-    )
-
-    title = models.CharField(
-        max_length=200,
-    )
-
-    description = models.TextField(
-        blank=True,
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=TaskStatus.choices,
-        default=TaskStatus.TODO,
-    )
-
-    deadline = models.DateField(
-        blank=True,
-        null=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
-
-    class Meta:
-
-        verbose_name = "وظیفه"
-
-        verbose_name_plural = "وظایف پروژه"
-
-        ordering = [
-            "deadline",
-            "-created_at",
-        ]
-
-    def __str__(self):
-
-        return self.title
-
-
-# ==========================================================
-# PROJECT VERSION
-# ==========================================================
-
-class ProjectVersion(models.Model):
-
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="versions",
-    )
-
-    version = models.CharField(
-        max_length=30,
-    )
-
-    title = models.CharField(
-        max_length=200,
-    )
-
-    description = models.TextField(
-        blank=True,
-    )
-
-    file = models.FileField(
-        upload_to=upload_to_versions,
-        validators=[
-            validate_file_size,
-        ],
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "نسخه پروژه"
-
-        verbose_name_plural = "نسخه‌های پروژه"
-
-        ordering = [
-            "-created_at",
-        ]
-
-    def __str__(self):
-
-        return f"{self.order.tracking_code} - {self.version}"
-
-# ==========================================================
-# ORDER HISTORY
-# ==========================================================
-
-class OrderHistory(models.Model):
-
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="history",
-    )
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="order_histories",
-    )
-
-    action = models.CharField(
-        max_length=200,
-        verbose_name="عملیات",
-    )
-
-    old_status = models.CharField(
-        max_length=30,
-        blank=True,
-    )
-
-    new_status = models.CharField(
-        max_length=30,
-        blank=True,
-    )
-
-    ip_address = models.GenericIPAddressField(
-        blank=True,
-        null=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "تاریخچه سفارش"
-
-        verbose_name_plural = "تاریخچه سفارش‌ها"
-
-        ordering = [
-            "-created_at",
-        ]
-
-    def __str__(self):
-
-        return f"{self.order.tracking_code} - {self.action}"
-
-
-# ==========================================================
-# ORDER NOTE
-# ==========================================================
-
-class OrderNote(models.Model):
-
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="notes",
-    )
-
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-
-    note = models.TextField()
-
-    private = models.BooleanField(
-        default=True,
-        verbose_name="خصوصی",
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    class Meta:
-
-        verbose_name = "یادداشت سفارش"
-
-        verbose_name_plural = "یادداشت‌های سفارش"
-
-        ordering = [
-            "-created_at",
-        ]
-
-    def __str__(self):
-
-        return self.order.tracking_code
-
-# ==========================================================
-# REVIEW
-# ==========================================================
-
-class Review(models.Model):
-
-    order = models.OneToOneField(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="review",
-        verbose_name="سفارش",
-    )
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="reviews",
-        verbose_name="کاربر",
-    )
-
-    rating = models.PositiveSmallIntegerField(
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(5),
-        ],
-        verbose_name="امتیاز",
-    )
-
-    title = models.CharField(
-        max_length=200,
-        blank=True,
-        verbose_name="عنوان",
-    )
-
-    comment = models.TextField(
-        blank=True,
-        verbose_name="نظر",
-    )
-
-    is_public = models.BooleanField(
-        default=True,
-        db_index=True,
-        verbose_name="نمایش عمومی",
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
-
-    class Meta:
-
-        verbose_name = "نظر"
-
-        verbose_name_plural = "نظرات"
-
-        ordering = [
-            "-created_at",
-        ]
-
-    def __str__(self):
-
-        return f"{self.order.tracking_code} ({self.rating})"
-
-
-
-# ==========================================================
-# NOTIFICATION
-# ==========================================================
-
-class Notification(models.Model):
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="notifications",
+        verbose_name="کاربر",
     )
+
 
     title = models.CharField(
-        max_length=200,
+        max_length=255,
+        verbose_name="عنوان",
     )
 
-    message = models.TextField()
+
+    message = models.TextField(
+        verbose_name="متن اعلان",
+    )
+
+
+    notification_type = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default="system",
+        db_index=True,
+        verbose_name="نوع اعلان",
+    )
+
+
+    related_url = models.URLField(
+        blank=True,
+        verbose_name="لینک مرتبط",
+    )
+
 
     is_read = models.BooleanField(
         default=False,
         db_index=True,
+        verbose_name="خوانده شده",
     )
 
-    link = models.CharField(
-        max_length=300,
+
+    read_at = models.DateTimeField(
+        null=True,
         blank=True,
+        verbose_name="زمان خواندن",
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="اطلاعات اضافی",
     )
+
 
     class Meta:
 
@@ -2153,550 +2017,1613 @@ class Notification(models.Model):
             "-created_at",
         ]
 
+
         indexes = [
 
-            models.Index(fields=["is_read"]),
+            models.Index(
+                fields=[
+                    "user",
+                    "is_read",
+                ]
+            ),
 
-            models.Index(fields=["created_at"]),
+            models.Index(
+                fields=[
+                    "notification_type",
+                    "-created_at",
+                ]
+            ),
 
         ]
+
+
+    def mark_as_read(self):
+
+        if not self.is_read:
+
+            self.is_read = True
+
+            self.read_at = timezone.now()
+
+            self.save(
+                update_fields=[
+                    "is_read",
+                    "read_at",
+                ]
+            )
+
+
+    def __str__(self):
+
+        return self.title
+    
+# ==========================================================
+# CONTACT MESSAGE MODEL
+# ==========================================================
+
+class ContactMessage(UUIDModel):
+
+    STATUS_CHOICES = (
+
+        ("new", "جدید"),
+
+        ("read", "خوانده شده"),
+
+        ("in_progress", "در حال بررسی"),
+
+        ("answered", "پاسخ داده شده"),
+
+        ("closed", "بسته شده"),
+
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="contact_messages",
+        verbose_name="کاربر",
+    )
+
+    is_read = models.BooleanField(
+        default=False,
+        verbose_name="خوانده شده"
+    )
+
+    name = models.CharField(
+        max_length=100,
+        verbose_name="نام",
+    )
+
+    email = models.EmailField(
+        verbose_name="ایمیل",
+    )
+
+    phone = models.CharField(
+        max_length=11,
+        blank=True,
+        validators=[
+            phone_validator,
+        ],
+        verbose_name="شماره موبایل",
+    )
+
+    subject = models.CharField(
+        max_length=255,
+        verbose_name="موضوع",
+    )
+
+    message = models.TextField(
+        verbose_name="پیام",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="new",
+        db_index=True,
+        verbose_name="وضعیت",
+    )
+
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assigned_contact_messages",
+        verbose_name="مسئول بررسی",
+    )
+
+    answered_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="زمان پاسخ",
+    )
+
+
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        verbose_name="آدرس IP",
+    )
+
+
+    user_agent = models.TextField(
+        blank=True,
+        verbose_name="اطلاعات مرورگر",
+    )
+
+
+    class Meta:
+
+        verbose_name = "پیام تماس"
+
+        verbose_name_plural = "پیام‌های تماس"
+
+        ordering = [
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "status",
+                    "-created_at",
+                ]
+            ),
+
+            models.Index(
+                fields=[
+                    "email",
+                ]
+            ),
+
+        ]
+
+
+    def mark_as_answered(self):
+
+        self.status = "answered"
+
+        self.answered_at = timezone.now()
+
+        self.save(
+            update_fields=[
+                "status",
+                "answered_at",
+            ]
+        )
+
+
+    def __str__(self):
+
+        return (
+            f"{self.name} - "
+            f"{self.subject}"
+        )
+
+# ==========================================================
+# SITE SETTING MODEL
+# ==========================================================
+
+class SiteSetting(UUIDModel):
+
+    site_name = models.CharField(
+        max_length=200,
+        default="Nexora Web",
+        verbose_name="نام سایت",
+    )
+
+
+    site_title = models.CharField(
+        max_length=255,
+        default="Nexora Web - Web Development",
+        verbose_name="عنوان مرورگر",
+    )
+
+
+    logo = models.ImageField(
+        upload_to="site/logo/",
+        blank=True,
+        null=True,
+        verbose_name="لوگو",
+    )
+
+
+    favicon = models.ImageField(
+        upload_to="site/favicon/",
+        blank=True,
+        null=True,
+        verbose_name="فاوآیکون",
+    )
+
+
+    phone = models.CharField(
+        max_length=30,
+        blank=True,
+        verbose_name="تلفن",
+    )
+
+
+    email = models.EmailField(
+        blank=True,
+        verbose_name="ایمیل",
+    )
+
+
+    address = models.TextField(
+        blank=True,
+        verbose_name="آدرس",
+    )
+
+
+    short_description = models.CharField(
+        max_length=300,
+        blank=True,
+        verbose_name="توضیح کوتاه سایت",
+    )
+
+
+    about = models.TextField(
+        blank=True,
+        verbose_name="درباره ما",
+    )
+
+
+    instagram = models.URLField(
+        blank=True,
+        verbose_name="اینستاگرام",
+    )
+
+
+    telegram = models.URLField(
+        blank=True,
+        verbose_name="تلگرام",
+    )
+
+
+    linkedin = models.URLField(
+        blank=True,
+        verbose_name="لینکدین",
+    )
+
+
+    github = models.URLField(
+        blank=True,
+        verbose_name="گیت‌هاب",
+    )
+
+
+    youtube = models.URLField(
+        blank=True,
+        verbose_name="یوتیوب",
+    )
+
+
+    meta_description = models.TextField(
+        blank=True,
+        verbose_name="توضیحات متا SEO",
+    )
+
+
+    meta_keywords = models.TextField(
+        blank=True,
+        verbose_name="کلمات کلیدی SEO",
+    )
+
+
+    google_analytics_id = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Google Analytics ID",
+    )
+
+
+    maintenance_mode = models.BooleanField(
+        default=False,
+        verbose_name="حالت تعمیرات",
+    )
+
+
+    class Meta:
+
+        verbose_name = "تنظیمات سایت"
+
+        verbose_name_plural = "تنظیمات سایت"
+
+
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
+
+        if SiteSetting.objects.exists() and not self.pk:
+
+            raise ValidationError(
+                "فقط یک تنظیمات سایت مجاز است."
+            )
+
+
+        super().save(
+            *args,
+            **kwargs
+        )
+
+
+    def __str__(self):
+
+        return self.site_name
+
+# ==========================================================
+# FAQ MODEL
+# ==========================================================
+
+class FAQ(UUIDModel):
+
+    question = models.CharField(
+        max_length=300,
+        verbose_name="سوال",
+    )
+
+
+    answer = models.TextField(
+        verbose_name="پاسخ",
+    )
+
+
+    category = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="دسته‌بندی",
+    )
+
+
+    order = models.PositiveIntegerField(
+        default=0,
+        db_index=True,
+        verbose_name="ترتیب نمایش",
+    )
+
+
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="نمایش ویژه",
+    )
+
+
+    class Meta:
+
+        verbose_name = "سوال متداول"
+
+        verbose_name_plural = "سوالات متداول"
+
+        ordering = [
+            "order",
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "is_featured",
+                    "order",
+                ]
+            ),
+
+        ]
+
+
+    def __str__(self):
+
+        return self.question
+
+# ==========================================================
+# TEAM MODEL
+# ==========================================================
+
+class Team(UUIDModel):
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="team_profile",
+        verbose_name="کاربر",
+    )
+
+
+    position = models.CharField(
+        max_length=200,
+        verbose_name="سمت",
+    )
+
+
+    bio = models.TextField(
+        blank=True,
+        verbose_name="بیوگرافی",
+    )
+
+
+    avatar = models.ImageField(
+        upload_to="team/",
+        blank=True,
+        null=True,
+        verbose_name="تصویر پروفایل",
+    )
+
+    name = models.CharField(
+            max_length=100,
+            verbose_name="نام"
+        )
+
+    role = models.CharField(
+        max_length=100,
+        verbose_name="سمت"
+    )
+
+    skills = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name="مهارت‌ها",
+    )
+
+
+    linkedin = models.URLField(
+        blank=True,
+        verbose_name="لینکدین",
+    )
+
+
+    github = models.URLField(
+        blank=True,
+        verbose_name="گیت‌هاب",
+    )
+
+
+    website = models.URLField(
+        blank=True,
+        verbose_name="وب‌سایت شخصی",
+    )
+
+
+    order = models.PositiveIntegerField(
+        default=0,
+        db_index=True,
+        verbose_name="ترتیب نمایش",
+    )
+
+
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="عضو ویژه",
+    )
+
+
+    class Meta:
+
+        verbose_name = "عضو تیم"
+
+        verbose_name_plural = "اعضای تیم"
+
+        ordering = [
+            "order",
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "is_featured",
+                    "order",
+                ]
+            ),
+
+        ]
+
+
+    def __str__(self):
+
+        return (
+            self.user.get_full_name()
+            or self.user.username
+        )
+
+# ==========================================================
+# REVIEW MODEL
+# ==========================================================
+
+class Review(UUIDModel):
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviews",
+        verbose_name="کاربر",
+    )
+
+
+    name = models.CharField(
+        max_length=100,
+        verbose_name="نام مشتری",
+    )
+
+    title = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="عنوان نظر"
+    )
+
+
+    comment = models.TextField(
+        verbose_name="متن نظر",
+    )
+
+    company = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="شرکت",
+    )
+
+
+    avatar = models.ImageField(
+        upload_to="reviews/",
+        blank=True,
+        null=True,
+        verbose_name="تصویر مشتری",
+    )
+
+
+    message = models.TextField(
+        verbose_name="متن نظر",
+    )
+
+
+    rating = models.PositiveIntegerField(
+        default=5,
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5),
+        ],
+        verbose_name="امتیاز",
+    )
+
+
+    project = models.ForeignKey(
+        Portfolio,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviews",
+        verbose_name="پروژه مرتبط",
+    )
+
+
+    is_verified = models.BooleanField(
+        default=False,
+        verbose_name="تایید شده",
+    )
+
+
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="نمایش ویژه",
+    )
+
+
+    class Meta:
+
+        verbose_name = "نظر مشتری"
+
+        verbose_name_plural = "نظرات مشتریان"
+
+        ordering = [
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "is_featured",
+                    "-created_at",
+                ]
+            ),
+
+            models.Index(
+                fields=[
+                    "rating",
+                    "message",
+                    "rating",
+                ]
+            ),
+
+        ]
+
+
+    def __str__(self):
+
+        return self.name
+
+# ==========================================================
+# BLOG CATEGORY MODEL
+# ==========================================================
+
+class BlogCategory(SlugModel):
+
+    description = models.TextField(
+        blank=True,
+        verbose_name="توضیحات",
+    )
+
+
+    icon = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="آیکون FontAwesome",
+    )
+
+
+    order = models.PositiveIntegerField(
+        default=0,
+        db_index=True,
+        verbose_name="ترتیب نمایش",
+    )
+
+
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="دسته‌بندی ویژه",
+    )
+
+
+    class Meta:
+
+        verbose_name = "دسته‌بندی مقاله"
+
+        verbose_name_plural = "دسته‌بندی‌های مقاله"
+
+        ordering = [
+            "order",
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "is_featured",
+                    "order",
+                ]
+            ),
+
+        ]
+
 
     def __str__(self):
 
         return self.title
 
 # ==========================================================
-# ENTERPRISE OPTIMIZATION
+# TAG MODEL
 # ==========================================================
 
-# ----------------------------------------------------------
-# SERVICE
-# ----------------------------------------------------------
+class Tag(UUIDModel):
 
-Service._meta.get_field("title").db_index = True
-Service._meta.get_field("slug").db_index = True
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="نام تگ",
+    )
 
-# ----------------------------------------------------------
-# PORTFOLIO
-# ----------------------------------------------------------
 
-Portfolio._meta.get_field("slug").db_index = True
-Portfolio._meta.get_field("featured").db_index = True
-Portfolio._meta.get_field("active").db_index = True
+    slug = models.SlugField(
+        unique=True,
+        max_length=100,
+        validators=[
+            english_slug_validator,
+        ],
+        verbose_name="اسلاگ",
+    )
 
-# ----------------------------------------------------------
-# ORDER
-# ----------------------------------------------------------
 
-Order._meta.indexes += [
+    description = models.TextField(
+        blank=True,
+        verbose_name="توضیحات",
+    )
 
-    models.Index(
 
-        fields=["tracking_code"],
+    order = models.PositiveIntegerField(
+        default=0,
+        db_index=True,
+        verbose_name="ترتیب نمایش",
+    )
 
-        name="order_tracking_idx",
 
-    ),
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="تگ ویژه",
+    )
 
-    models.Index(
 
-        fields=["status"],
+    class Meta:
 
-        name="order_status_idx",
+        verbose_name = "تگ"
 
-    ),
+        verbose_name_plural = "تگ‌ها"
 
-    models.Index(
+        ordering = [
+            "order",
+            "-created_at",
+        ]
 
-        fields=["created_at"],
 
-        name="order_created_idx",
+        indexes = [
 
-    ),
+            models.Index(
+                fields=[
+                    "is_featured",
+                    "order",
+                ]
+            ),
 
-    models.Index(
+        ]
 
-        fields=["user"],
 
-        name="order_user_idx",
+    def save(
+        self,
+        *args,
+        **kwargs
+    ):
 
-    ),
+        if not self.slug:
 
-]
+            self.slug = slugify(
+                self.name
+            )
 
-# ----------------------------------------------------------
-# INVOICE
-# ----------------------------------------------------------
 
-Invoice._meta.indexes += [
+        super().save(
+            *args,
+            **kwargs
+        )
 
-    models.Index(
 
-        fields=["invoice_number"],
+    def __str__(self):
 
-        name="invoice_number_idx",
-
-    ),
-
-    models.Index(
-
-        fields=["status"],
-
-        name="invoice_status_idx",
-
-    ),
-
-]
-
-# ----------------------------------------------------------
-# TICKET
-# ----------------------------------------------------------
-
-Ticket._meta.indexes += [
-
-    models.Index(
-
-        fields=["order"],
-
-        name="ticket_order_idx",
-
-    ),
-
-    models.Index(
-
-        fields=["sender"],
-
-        name="ticket_sender_idx",
-
-    ),
-
-]
-
-# ----------------------------------------------------------
-# REVIEW
-# ----------------------------------------------------------
-
-Review._meta.indexes += [
-
-    models.Index(
-
-        fields=["rating"],
-
-        name="review_rating_idx",
-
-    ),
-
-]
-
-# ----------------------------------------------------------
-# NOTIFICATION
-# ----------------------------------------------------------
-
-Notification._meta.indexes += [
-
-    models.Index(
-
-        fields=["user"],
-
-        name="notification_user_idx",
-
-    ),
-
-]
-
-# ----------------------------------------------------------
-# DATABASE CONSTRAINTS
-# ----------------------------------------------------------
-
-Order._meta.constraints = [
-
-    models.UniqueConstraint(
-
-        fields=["tracking_code"],
-
-        name="unique_tracking_code",
-
-    ),
-
-]
-
-Invoice._meta.constraints = [
-
-    models.UniqueConstraint(
-
-        fields=["invoice_number"],
-
-        name="unique_invoice_number",
-
-    ),
-
-]
-
-Service._meta.constraints = [
-
-    models.UniqueConstraint(
-
-        fields=["slug"],
-
-        name="unique_service_slug",
-
-    ),
-
-]
-
-Portfolio._meta.constraints = [
-
-    models.UniqueConstraint(
-
-        fields=["slug"],
-
-        name="unique_portfolio_slug",
-
-    ),
-
-]
-
-Career._meta.constraints = [
-
-    models.UniqueConstraint(
-
-        fields=["slug"],
-
-        name="unique_career_slug",
-
-    ),
-
-]
-
-# ----------------------------------------------------------
-# DEFAULT ORDERING
-# ----------------------------------------------------------
-
-Order._meta.ordering = [
-
-    "-created_at",
-
-]
-
-Portfolio._meta.ordering = [
-
-    "-featured",
-
-    "-created_at",
-
-]
-
-Notification._meta.ordering = [
-
-    "-created_at",
-
-]
-
-Ticket._meta.ordering = [
-
-    "created_at",
-
-]
-
-Invoice._meta.ordering = [
-
-    "-created_at",
-
-]
-
-Review._meta.ordering = [
-
-    "-created_at",
-
-]
+        return self.name
 
 # ==========================================================
-# FINAL ENTERPRISE SETTINGS
+# BLOG MODEL
 # ==========================================================
 
-# این فایل برای موارد زیر آماده است:
-#
-# ✔ Django Admin
-# ✔ Django REST Framework
-# ✔ Mobile App
-# ✔ React Dashboard
-# ✔ PostgreSQL
-# ✔ Docker
-# ✔ Celery
-# ✔ Redis
-# ✔ Cloud Storage
-# ✔ Payment Gateway
-# ✔ SMS
-# ✔ Email
-# ✔ Notifications
-# ✔ Analytics
-# ✔ SEO
-# ✔ Multi Language
-# ✔ Enterprise Scale
-#
-# ----------------------------------------------------------
+class Blog(SlugModel):
 
+    category = models.ForeignKey(
+        BlogCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="blogs",
+        verbose_name="دسته‌بندی",
+    )
+
+
+    tags = models.ManyToManyField(
+        Tag,
+        blank=True,
+        related_name="blogs",
+        verbose_name="تگ‌ها",
+    )
+
+
+    short_description = models.CharField(
+        max_length=300,
+        verbose_name="توضیح کوتاه",
+    )
+
+
+    content = models.TextField(
+        verbose_name="محتوا",
+    )
+
+
+    image = models.ImageField(
+        upload_to="blog/",
+        blank=True,
+        null=True,
+        verbose_name="تصویر مقاله",
+    )
+
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="blogs",
+        verbose_name="نویسنده",
+    )
+
+
+    views = models.PositiveIntegerField(
+        default=0,
+        verbose_name="بازدید",
+    )
+
+
+    reading_time = models.PositiveIntegerField(
+        default=5,
+        verbose_name="زمان مطالعه (دقیقه)",
+    )
+
+
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="مقاله ویژه",
+    )
+
+
+    is_published = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="منتشر شده",
+    )
+
+
+    published_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="تاریخ انتشار",
+    )
+
+
+    meta_title = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="عنوان SEO",
+    )
+
+
+    meta_description = models.TextField(
+        blank=True,
+        verbose_name="توضیحات SEO",
+    )
+
+
+    class Meta:
+
+        verbose_name = "مقاله"
+
+        verbose_name_plural = "مقالات"
+
+        ordering = [
+            "-created_at",
+        ]
+
+
+        indexes = [
+
+            models.Index(
+                fields=[
+                    "is_published",
+                    "-created_at",
+                ]
+            ),
+
+            models.Index(
+                fields=[
+                    "is_featured",
+                ]
+            ),
+
+        ]
+
+
+    def get_absolute_url(self):
+
+        return reverse(
+            "blog_detail",
+            kwargs={
+                "slug": self.slug
+            }
+        )
+
+
+    def __str__(self):
+
+        return self.title
 
 # ==========================================================
-# ABSTRACT BASE MODEL
+# JOB APPLICATION MODEL
 # ==========================================================
 
-class TimeStampedModel(models.Model):
+class JobApplication(UUIDModel):
+
+    STATUS_CHOICES = [
+        ("pending", "در انتظار بررسی"),
+        ("accepted", "پذیرفته شده"),
+        ("rejected", "رد شده"),
+    ]
+
+    full_name = models.CharField(
+        max_length=150,
+        verbose_name="نام کامل"
+    )
+
+    email = models.EmailField(
+        verbose_name="ایمیل"
+    )
+
+    phone = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="شماره تماس"
+    )
+
+    position = models.CharField(
+        max_length=150,
+        verbose_name="موقعیت شغلی"
+    )
+
+    skills = models.TextField(
+        blank=True,
+        verbose_name="مهارت‌ها"
+    )
+
+    portfolio = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="لینک نمونه کار"
+    )
+
+    experience = models.TextField(
+        blank=True,
+        verbose_name="تجربه کاری"
+    )
+
+    resume = models.FileField(
+        upload_to="applications/resumes/",
+        blank=True,
+        null=True,
+        verbose_name="رزومه"
+    )
+
+    message = models.TextField(
+        blank=True,
+        verbose_name="توضیحات"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+
+    class Meta:
+        verbose_name = "درخواست همکاری"
+        verbose_name_plural = "درخواست‌های همکاری"
+        ordering = ["-created_at"]
+
+
+    def __str__(self):
+        return f"{self.full_name} - {self.position}"
+
+class ProjectStatus(models.TextChoices):
+
+    PLANNING = "planning", "برنامه‌ریزی"
+
+    DEVELOPMENT = "development", "در حال توسعه"
+
+    TESTING = "testing", "در حال تست"
+
+    DEPLOYMENT = "deployment", "آماده انتشار"
+
+    COMPLETED = "completed", "تکمیل شده"
+
+class ProjectTask(models.Model):
+    status = models.CharField(max_length=50, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(
+        max_length=200,
+        verbose_name="عنوان وظیفه"
+    )
+
+    description = models.TextField(
+        blank=True,
+        verbose_name="توضیحات"
+    )
+
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="project_tasks",
+        verbose_name="مسئول انجام"
+    )
+
+    deadline = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="مهلت انجام"
+    )
+
+    def __str__(self):
+        return self.title
+
+class SupportTicket(UUIDModel):
+    STATUS_CHOICES = (
+        ("open", "باز"),
+        ("pending", "در انتظار پاسخ"),
+        ("answered", "پاسخ داده شده"),
+        ("closed", "بسته شده"),
+    )
+
+    PRIORITY_CHOICES = (
+        ("low", "کم"),
+        ("normal", "عادی"),
+        ("high", "زیاد"),
+        ("urgent", "فوری"),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="support_tickets",
+        verbose_name="کاربر",
+    )
+
+    subject = models.CharField(
+        max_length=255,
+        verbose_name="موضوع",
+    )
+
+    message = models.TextField(
+        verbose_name="متن پیام",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="open",
+        db_index=True,
+        verbose_name="وضعیت",
+    )
+
+    priority = models.CharField(
+        max_length=20,
+        choices=PRIORITY_CHOICES,
+        default="normal",
+        db_index=True,
+        verbose_name="اولویت",
+    )
+
+    admin_reply = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="پاسخ مدیریت",
+    )
+
+    attachment = models.FileField(
+        upload_to="support/tickets/",
+        blank=True,
+        null=True,
+        verbose_name="فایل پیوست",
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True,
+        verbose_name="تاریخ ایجاد",
     )
 
     updated_at = models.DateTimeField(
         auto_now=True,
+        verbose_name="آخرین بروزرسانی",
     )
 
-    class Meta:
-
-        abstract = True
-
-
-# ==========================================================
-# UUID MIXIN
-# ==========================================================
-
-class UUIDMixin(models.Model):
-
-    uuid = models.UUIDField(
-        default=uuid4,
-        editable=False,
-        unique=True,
-        db_index=True,
-    )
-
-    class Meta:
-
-        abstract = True
-
-
-# ==========================================================
-# SOFT DELETE (برای آینده)
-# ==========================================================
-
-class SoftDeleteModel(models.Model):
-
-    is_deleted = models.BooleanField(
-        default=False,
-        db_index=True,
-    )
-
-    deleted_at = models.DateTimeField(
+    closed_at = models.DateTimeField(
         blank=True,
         null=True,
+        verbose_name="زمان بسته شدن",
+    )
+
+
+    class Meta:
+        verbose_name = "تیکت پشتیبانی"
+        verbose_name_plural = "تیکت‌های پشتیبانی"
+        ordering = ["-created_at"]
+
+        indexes = [
+            models.Index(
+                fields=["user", "status"]
+            ),
+            models.Index(
+                fields=["priority", "-created_at"]
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.subject} - {self.user}"
+
+class Project(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "در انتظار"),
+        ("planning", "برنامه‌ریزی"),
+        ("development", "در حال توسعه"),
+        ("testing", "تست"),
+        ("completed", "تکمیل شده"),
+        ("cancelled", "لغو شده"),
+    ]
+
+    title = models.CharField(
+        max_length=200,
+        verbose_name="عنوان پروژه"
+    )
+
+    slug = models.SlugField(
+        max_length=200,
+        unique=True,
+        verbose_name="اسلاگ"
+    )
+
+    description = models.TextField(
+        verbose_name="توضیحات پروژه"
+    )
+
+    client_name = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="نام مشتری"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+        verbose_name="وضعیت"
+    )
+
+    start_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="تاریخ شروع"
+    )
+
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="تاریخ پایان"
+    )
+
+    image = models.ImageField(
+        upload_to="projects/",
+        blank=True,
+        null=True,
+        verbose_name="تصویر پروژه"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        verbose_name = "پروژه"
+        verbose_name_plural = "پروژه‌ها"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+class VersionHistory(models.Model):
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="versions"
+    )
+
+    version = models.CharField(
+        max_length=50,
+        verbose_name="نسخه"
+    )
+
+    changes = models.TextField(
+        verbose_name="تغییرات"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        verbose_name = "تاریخچه نسخه"
+        verbose_name_plural = "تاریخچه نسخه‌ها"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.project} - {self.version}"
+    
+class Contract(models.Model):
+    STATUS_CHOICES = [
+        ("draft", "پیش‌نویس"),
+        ("active", "فعال"),
+        ("completed", "تکمیل شده"),
+        ("cancelled", "لغو شده"),
+    ]
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="contracts",
+        null=True,
+        blank=True
+    )
+
+    title = models.CharField(
+        max_length=200,
+        verbose_name="عنوان قرارداد"
+    )
+
+    client_name = models.CharField(
+        max_length=200,
+        verbose_name="نام مشتری"
+    )
+
+    description = models.TextField(
+        blank=True,
+        verbose_name="توضیحات"
+    )
+
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        default=0,
+        verbose_name="مبلغ قرارداد"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+        verbose_name="وضعیت"
+    )
+
+    start_date = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    end_date = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        verbose_name = "قرارداد"
+        verbose_name_plural = "قراردادها"
+
+    def __str__(self):
+        return self.title
+
+from django.conf import settings
+from django.db import models
+
+
+class Report(models.Model):
+    REPORT_TYPES = (
+        ("project", "گزارش پروژه"),
+        ("financial", "گزارش مالی"),
+        ("technical", "گزارش فنی"),
+        ("progress", "گزارش پیشرفت"),
+        ("system", "گزارش سیستم"),
+        ("other", "سایر"),
+    )
+
+    title = models.CharField(
+        max_length=255,
+        verbose_name="عنوان"
+    )
+
+    description = models.TextField(
+        verbose_name="توضیحات"
+    )
+
+    report_type = models.CharField(
+        max_length=20,
+        choices=REPORT_TYPES,
+        default="project",
+        verbose_name="نوع گزارش"
+    )
+
+    project = models.ForeignKey(
+        "Project",
+        on_delete=models.CASCADE,
+        related_name="reports",
+        null=True,
+        blank=True,
+        verbose_name="پروژه"
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reports",
+        verbose_name="ایجادکننده"
+    )
+
+    file = models.FileField(
+        upload_to="reports/",
+        null=True,
+        blank=True,
+        verbose_name="فایل گزارش"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="تاریخ ایجاد"
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="آخرین بروزرسانی"
+    )
+
+    class Meta:
+        verbose_name = "گزارش"
+        verbose_name_plural = "گزارش‌ها"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+class CompanySetting(models.Model):
+
+    name = models.CharField(
+        max_length=255,
+        default="Nexora",
+        verbose_name="نام شرکت"
+    )
+
+    logo = models.ImageField(
+        upload_to="company/",
+        blank=True,
+        null=True,
+        verbose_name="لوگو"
+    )
+
+    company_name = models.CharField(
+        max_length=255,
+        default="Nexora",
+        verbose_name="نام شرکت"
+    )
+
+
+    favicon = models.ImageField(
+        upload_to="company/favicon/",
+        blank=True,
+        null=True,
+        verbose_name="فاوآیکون"
+    )
+
+    about = models.TextField(
+        blank=True,
+        verbose_name="درباره شرکت"
+    )
+
+    address = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name="آدرس"
+    )
+
+    phone = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="تلفن"
+    )
+
+    email = models.EmailField(
+        blank=True,
+        verbose_name="ایمیل"
+    )
+
+    website = models.URLField(
+        blank=True,
+        verbose_name="وب‌سایت"
+    )
+
+    instagram = models.URLField(
+        blank=True,
+        verbose_name="اینستاگرام"
+    )
+
+    linkedin = models.URLField(
+        blank=True,
+        verbose_name="لینکدین"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+
+    class Meta:
+        verbose_name = "تنظیمات شرکت"
+        verbose_name_plural = "تنظیمات شرکت"
+
+
+    def __str__(self):
+        return self.name
+
+class ProjectProgress(models.Model):
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="progresses"
+    )
+    title = models.CharField(
+        max_length=200,
+        verbose_name="عنوان مرحله"
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name="توضیحات"
+    )
+    progress = models.PositiveIntegerField(
+        default=0,
+        verbose_name="درصد پیشرفت"
+    )
+    percentage = models.PositiveIntegerField(
+        default=0,
+        verbose_name="درصد پیشرفت"
+    )
+    note = models.TextField(
+        blank=True,
+        verbose_name="یادداشت"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        verbose_name = "پیشرفت پروژه"
+        verbose_name_plural = "پیشرفت‌های پروژه"
+
+    def clean(self):
+        if self.percentage > 100:
+            raise ValidationError(
+                "درصد پیشرفت نمی‌تواند بیشتر از ۱۰۰ باشد."
+            )
+    def __str__(self):
+        return f"{self.title} - {self.progress}%"
+
+# ==========================================================
+# PROJECT TIMELINE
+# ==========================================================
+
+class Timeline(BaseModel):
+
+    title = models.CharField(
+        max_length=200,
+        verbose_name="عنوان"
+    )
+
+    description = models.TextField(
+        verbose_name="توضیحات"
+    )
+
+    start_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="تاریخ شروع"
+    )
+
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="تاریخ پایان"
+    )
+
+    user = models.ForeignKey(
+
+        settings.AUTH_USER_MODEL,
+
+        on_delete=models.CASCADE,
+
+        related_name="timeline_events",
+
+    )
+
+    title = models.CharField(
+
+        max_length=200,
+
+    )
+
+    description = models.TextField(
+
+        blank=True,
+
+    )
+
+    status = models.CharField(
+
+        max_length=30,
+
+        choices=ProjectStatus.choices,
+
+        default=ProjectStatus.PLANNING,
+
+        db_index=True,
+
+    )
+
+    event_date = models.DateTimeField(
+
+        default=timezone.now,
+
+        db_index=True,
+
     )
 
     class Meta:
 
-        abstract = True
+        verbose_name = "رویداد پروژه"
 
+        verbose_name_plural = "رویدادهای پروژه"
 
-# ==========================================================
-# PROJECT VERSION
-# ==========================================================
+        ordering = [
 
-PROJECT_VERSION = "1.0.0 Enterprise"
+            "-event_date",
 
+        ]
 
-# ==========================================================
-# READY FOR
-# ==========================================================
+        indexes = [
 
-"""
-Future Features
+            models.Index(fields=["status"]),
 
-✓ API Token
+            models.Index(fields=["event_date"]),
 
-✓ JWT Authentication
+        ]
 
-✓ OAuth
+    def __str__(self):
 
-✓ Google Login
-
-✓ GitHub Login
-
-✓ Two Factor Authentication
-
-✓ SMS Login
-
-✓ Stripe
-
-✓ Zarinpal
-
-✓ IDPay
-
-✓ S3 Storage
-
-✓ Cloudinary
-
-✓ WebSocket
-
-✓ Chat
-
-✓ AI Assistant
-
-✓ CRM
-
-✓ ERP
-
-✓ Team Management
-
-✓ HR
-
-✓ Accounting
-
-✓ Reports
-
-✓ Statistics
-
-✓ Audit Logs
-
-✓ Multi Tenant
-
-✓ White Label
-"""
-
-# ==========================================================
-# SIGNALS
-# ==========================================================
-
-@receiver(post_save, sender=Order)
-def create_default_invoice(sender, instance, created, **kwargs):
-
-    if not created:
-        return
-
-    Invoice.objects.get_or_create(
-
-        order=instance,
-
-        defaults={
-
-            "amount": instance.estimated_price,
-
-            "due_date": timezone.now().date(),
-
-        },
-
-    )
-
-
-@receiver(post_save, sender=Order)
-def create_order_history(sender, instance, created, **kwargs):
-
-    if created:
-
-        OrderHistory.objects.create(
-
-            order=instance,
-
-            action="Order Created",
-
-            new_status=instance.status,
-
-        )
-
-
-@receiver(post_save, sender=Ticket)
-def notify_new_ticket(sender, instance, created, **kwargs):
-
-    if not created:
-        return
-
-    if instance.order.user:
-
-        Notification.objects.create(
-
-            user=instance.order.user,
-
-            title="تیکت جدید",
-
-            message="یک پیام جدید برای سفارش شما ثبت شد.",
-
-            link=reverse(
-
-                "order_detail",
-
-                kwargs={
-
-                    "tracking_code": instance.order.tracking_code,
-
-                },
-
-            ),
-
-        )
-
-
-@receiver(post_save, sender=ProjectVersion)
-def notify_new_version(sender, instance, created, **kwargs):
-
-    if not created:
-        return
-
-    if instance.order.user:
-
-        Notification.objects.create(
-
-            user=instance.order.user,
-
-            title="نسخه جدید پروژه",
-
-            message=f"نسخه {instance.version} پروژه شما آماده شد.",
-
-            link=reverse(
-
-                "order_detail",
-
-                kwargs={
-
-                    "tracking_code": instance.order.tracking_code,
-
-                },
-
-            ),
-
-        )
-
-
-@receiver(post_save, sender=Invoice)
-def invoice_paid(sender, instance, **kwargs):
-
-    if instance.status == InvoiceStatus.PAID:
-
-        if instance.paid_at is None:
-
-            instance.paid_at = timezone.now()
-
-            Invoice.objects.filter(
-
-                pk=instance.pk
-
-            ).update(
-
-                paid_at=instance.paid_at
-
-            )
-
-
-@receiver(post_save, sender=Review)
-def review_notification(sender, instance, created, **kwargs):
-
-    if not created:
-        return
-
-    if instance.order.user:
-
-        Notification.objects.create(
-
-            user=instance.order.user,
-
-            title="نظر شما ثبت شد",
-
-            message="از ثبت نظر شما سپاسگزاریم.",
-
-        )
+        return self.title

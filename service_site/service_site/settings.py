@@ -883,23 +883,14 @@ LOGGING = {
 CACHE_TIMEOUT = 60 * 15
 
 CACHES = {
-
     "default": {
-
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-
-        "LOCATION": "nexora-cache",
-
-        "TIMEOUT": CACHE_TIMEOUT,
-
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {
-
-            "MAX_ENTRIES": 10000,
-
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
-
+        "TIMEOUT": 60 * 15,
     }
-
 }
 
 # ==========================================================
@@ -1250,3 +1241,51 @@ LOGGING = {
     },
 
 }
+
+# ==========================================================
+# DJANGO SECURITY
+# ==========================================================
+
+DEBUG_PROPAGATE_EXCEPTIONS = False
+
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+X_FRAME_OPTIONS = "DENY"
+
+SECURE_BROWSER_XSS_FILTER = True
+
+# ==========================================================
+# FILE UPLOAD SECURITY
+# ==========================================================
+
+# حداکثر حجم فایل (20MB)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
+
+# حداکثر حجم داده POST
+DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
+
+# پوشه فایل‌های موقت
+FILE_UPLOAD_TEMP_DIR = BASE_DIR / "tmp"
+
+# فقط UTF-8
+DEFAULT_CHARSET = "utf-8"
+
+# ==========================================================
+# EMAIL CONFIG
+# ==========================================================
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.gmail.com"
+
+EMAIL_PORT = 587
+
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = "ایمیل Nexora"
+
+EMAIL_HOST_PASSWORD = "رمز برنامه Gmail"
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

@@ -1,30 +1,49 @@
+# ==========================================================
+# IMPORTS
+# ==========================================================
+
 from django.contrib import admin
+
 from django.utils.html import format_html
+
 from django.db.models import Count
-from django.utils import timezone
 
 from .models import (
+    Category,
     Service,
     Portfolio,
+    PortfolioImage,
     Order,
-    Contact,
-    Career,
-    JobApplication,
-    Ticket,
+    OrderFile,
+    Payment,
     Invoice,
-    ProjectProgress,
-    ProjectTimeline,
-    ProjectTask,
-    ProjectVersion,
+    ContactMessage,
+    SiteSetting,
+    FAQ,
+    Team,
+    Review,
+    BlogCategory,
+    Tag,
+    Blog,
 )
+
+
 
 # ==========================================================
 # ADMIN HELPERS
 # ==========================================================
 
-def image_preview(obj):
 
-    if getattr(obj, "image", None):
+def image_preview(obj, field="image"):
+
+    image = getattr(
+        obj,
+        field,
+        None,
+    )
+
+
+    if image:
 
         return format_html(
 
@@ -32,17 +51,20 @@ def image_preview(obj):
             'style="border-radius:10px;'
             'border:1px solid #ddd;">',
 
-            obj.image.url,
+            image.url,
 
         )
+
 
     return "-"
 
 
-image_preview.short_description = "پیش نمایش"
+
+image_preview.short_description = "پیش‌نمایش"
 
 
-def order_status_badge(obj):
+
+def status_badge(obj):
 
     colors = {
 
@@ -54,110 +76,80 @@ def order_status_badge(obj):
 
         "cancelled": "#dc3545",
 
-    }
+        "paid": "#198754",
 
-    labels = {
-
-        "pending": "در انتظار",
-
-        "processing": "در حال انجام",
-
-        "completed": "تکمیل شده",
-
-        "cancelled": "لغو شده",
+        "failed": "#dc3545",
 
     }
+
+
+    status = getattr(
+        obj,
+        "status",
+        "",
+    )
+
 
     return format_html(
 
-        '<span style="'
-        'background:{};'
+        '<span style="background:{};'
         'color:white;'
         'padding:5px 12px;'
-        'border-radius:15px;'
-        'font-size:12px;'
-        'font-weight:bold;">'
+        'border-radius:15px;">'
         '{}'
         '</span>',
 
-        colors.get(obj.status, "#6c757d"),
+        colors.get(
+            status,
+            "#6c757d",
+        ),
 
-        labels.get(obj.status, obj.status),
-
-    )
-
-
-order_status_badge.short_description = "وضعیت"
-
-
-def progress_badge(obj):
-
-    value = getattr(obj, "percent", 0)
-
-    color = "#dc3545"
-
-    if value >= 30:
-        color = "#ffc107"
-
-    if value >= 70:
-        color = "#0dcaf0"
-
-    if value == 100:
-        color = "#198754"
-
-    return format_html(
-
-        '<strong style="color:{};">{}%</strong>',
-
-        color,
-
-        value,
+        status,
 
     )
 
 
-progress_badge.short_description = "پیشرفت"
+
+status_badge.short_description = "وضعیت"
 
 
-def file_download(obj):
-
-    if hasattr(obj, "file") and obj.file:
-
-        return format_html(
-
-            '<a class="button" href="{}" target="_blank">'
-            'دانلود'
-            '</a>',
-
-            obj.file.url,
-
-        )
-
-    return "-"
-
-
-file_download.short_description = "فایل"
 
 # ==========================================================
-# SERVICE ADMIN
+# ADMIN SITE CONFIG
 # ==========================================================
 
-@admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
+
+admin.site.site_title = "Nexora Administration"
+
+admin.site.site_header = "Nexora Control Panel"
+
+admin.site.index_title = "Dashboard"
+
+admin.site.empty_value_display = "-"
+
+# ==========================================================
+# CATEGORY ADMIN
+# ==========================================================
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+
 
     list_display = (
 
         "title",
 
-        "base_price",
+        "slug",
 
-        "active",
+        "service_count",
 
-        "portfolio_count",
+        "is_active",
 
         "created_at",
 
     )
+
 
     list_display_links = (
 
@@ -165,11 +157,13 @@ class ServiceAdmin(admin.ModelAdmin):
 
     )
 
+
     list_editable = (
 
-        "active",
+        "is_active",
 
     )
+
 
     search_fields = (
 
@@ -179,19 +173,15 @@ class ServiceAdmin(admin.ModelAdmin):
 
     )
 
+
     list_filter = (
 
-        "active",
+        "is_active",
 
         "created_at",
 
     )
 
-    ordering = (
-
-        "title",
-
-    )
 
     readonly_fields = (
 
@@ -201,15 +191,161 @@ class ServiceAdmin(admin.ModelAdmin):
 
     )
 
-    list_per_page = 20
-
-    save_on_top = True
 
     prepopulated_fields = {
 
-        "slug": ("title",)
+        "slug": (
+
+            "title",
+
+        )
 
     }
+
+
+    ordering = (
+
+        "title",
+
+    )
+
+
+    list_per_page = 25
+
+
+    save_on_top = True
+
+
+
+    def get_queryset(self, request):
+
+        queryset = super().get_queryset(request)
+
+
+        return queryset.annotate(
+
+            total_services=Count(
+                "services"
+            )
+
+        )
+
+
+
+    @admin.display(
+
+        description="تعداد سرویس‌ها",
+
+        ordering="total_services",
+
+    )
+
+    def service_count(self, obj):
+
+        return obj.total_services
+
+# ==========================================================
+# SERVICE ADMIN
+# ==========================================================
+
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+
+
+    list_display = (
+
+        "title",
+
+        "category",
+
+        "base_price",
+
+        "portfolio_count",
+
+        "is_active",
+
+        "created_at",
+
+    )
+
+
+    list_display_links = (
+
+        "title",
+
+    )
+
+
+    list_editable = (
+
+        "is_active",
+
+    )
+
+
+    search_fields = (
+
+        "title",
+
+        "description",
+
+        "slug",
+
+    )
+
+
+    list_filter = (
+
+        "category",
+
+        "is_active",
+
+        "created_at",
+
+    )
+
+
+    autocomplete_fields = (
+
+        "category",
+
+    )
+
+
+    readonly_fields = (
+
+        "created_at",
+
+        "updated_at",
+
+    )
+
+
+    prepopulated_fields = {
+
+        "slug": (
+
+            "title",
+
+        )
+
+    }
+
+
+    ordering = (
+
+        "-created_at",
+
+    )
+
+
+    list_per_page = 25
+
+
+    save_on_top = True
+
+
 
     fieldsets = (
 
@@ -225,6 +361,8 @@ class ServiceAdmin(admin.ModelAdmin):
 
                     "slug",
 
+                    "category",
+
                     "description",
 
                 )
@@ -233,9 +371,10 @@ class ServiceAdmin(admin.ModelAdmin):
 
         ),
 
+
         (
 
-            "تنظیمات",
+            "تنظیمات سرویس",
 
             {
 
@@ -245,13 +384,14 @@ class ServiceAdmin(admin.ModelAdmin):
 
                     "icon",
 
-                    "active",
+                    "is_active",
 
                 )
 
             },
 
         ),
+
 
         (
 
@@ -279,19 +419,26 @@ class ServiceAdmin(admin.ModelAdmin):
 
     )
 
+
+
     def get_queryset(self, request):
 
         queryset = super().get_queryset(request)
 
+
         return queryset.annotate(
 
-            total_portfolios=Count("portfolios")
+            total_portfolios=Count(
+                "portfolios"
+            )
 
         )
 
+
+
     @admin.display(
 
-        description="نمونه کارها",
+        description="نمونه‌کارها",
 
         ordering="total_portfolios",
 
@@ -302,23 +449,76 @@ class ServiceAdmin(admin.ModelAdmin):
         return obj.total_portfolios
 
 # ==========================================================
+# PORTFOLIO IMAGE INLINE
+# ==========================================================
+
+
+class PortfolioImageInline(admin.TabularInline):
+
+    model = PortfolioImage
+
+    extra = 1
+
+
+    fields = (
+
+        "image",
+
+        "preview",
+
+        "alt_text",
+
+        "order",
+
+    )
+
+
+    readonly_fields = (
+
+        "preview",
+
+    )
+
+
+    ordering = (
+
+        "order",
+
+    )
+
+
+    @admin.display(
+        description="پیش‌نمایش"
+    )
+    def preview(self, obj):
+
+        return image_preview(
+            obj,
+            "image",
+        )
+
+
+
+# ==========================================================
 # PORTFOLIO ADMIN
 # ==========================================================
+
 
 @admin.register(Portfolio)
 class PortfolioAdmin(admin.ModelAdmin):
 
+
     list_display = (
 
-        "image_preview",
+        "preview",
 
         "title",
 
-        "service",
+        "category",
 
-        "client",
+        "client_name",
 
-        "featured",
+        "is_featured",
 
         "views",
 
@@ -326,19 +526,22 @@ class PortfolioAdmin(admin.ModelAdmin):
 
     )
 
+
     list_display_links = (
 
-        "image_preview",
+        "preview",
 
         "title",
 
     )
 
+
     list_editable = (
 
-        "featured",
+        "is_featured",
 
     )
+
 
     search_fields = (
 
@@ -346,37 +549,58 @@ class PortfolioAdmin(admin.ModelAdmin):
 
         "description",
 
-        "client",
+        "client_name",
 
         "technologies",
 
+        "slug",
+
     )
+
 
     list_filter = (
 
-        "featured",
+        "category",
 
-        "service",
+        "is_featured",
+
+        "is_active",
 
         "created_at",
 
     )
 
+
     autocomplete_fields = (
 
-        "service",
+        "category",
 
     )
 
+
     readonly_fields = (
 
-        "image_preview",
+        "preview",
 
         "views",
 
         "created_at",
 
+        "updated_at",
+
     )
+
+
+    prepopulated_fields = {
+
+        "slug": (
+
+            "title",
+
+        )
+
+    }
+
 
     ordering = (
 
@@ -384,17 +608,19 @@ class PortfolioAdmin(admin.ModelAdmin):
 
     )
 
-    date_hierarchy = "created_at"
 
-    list_per_page = 20
+    list_per_page = 25
+
 
     save_on_top = True
 
-    prepopulated_fields = {
 
-        "slug": ("title",)
+    inlines = (
 
-    }
+        PortfolioImageInline,
+
+    )
+
 
     fieldsets = (
 
@@ -410,53 +636,73 @@ class PortfolioAdmin(admin.ModelAdmin):
 
                     "slug",
 
+                    "category",
+
                     "description",
 
-                    "service",
-
                 )
 
             },
 
         ),
 
+
         (
 
-            "رسانه",
+            "اطلاعات مشتری",
 
             {
 
                 "fields": (
 
-                    "image",
-
-                    "image_preview",
-
-                )
-
-            },
-
-        ),
-
-        (
-
-            "اطلاعات تکمیلی",
-
-            {
-
-                "fields": (
-
-                    "client",
+                    "client_name",
 
                     "technologies",
 
-                    "featured",
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "تصویر اصلی",
+
+            {
+
+                "fields": (
+
+                    "cover_image",
+
+                    "preview",
 
                 )
 
             },
 
         ),
+
+
+        (
+
+            "تنظیمات",
+
+            {
+
+                "fields": (
+
+                    "is_featured",
+
+                    "is_active",
+
+                )
+
+            },
+
+        ),
+
 
         (
 
@@ -476,7 +722,9 @@ class PortfolioAdmin(admin.ModelAdmin):
 
                     "created_at",
 
-                ),
+                    "updated_at",
+
+                )
 
             },
 
@@ -484,145 +732,53 @@ class PortfolioAdmin(admin.ModelAdmin):
 
     )
 
-    @admin.display(description="تصویر")
 
-    def image_preview(self, obj):
 
-        return image_preview(obj)
+    @admin.display(
+        description="تصویر"
+    )
+    def preview(self, obj):
+
+        return image_preview(
+            obj,
+            "cover_image",
+        )
+
+
+
+    def get_queryset(self, request):
+
+        return super().get_queryset(
+            request
+        ).select_related(
+            "category"
+        )
 
 # ==========================================================
-# ADMIN INLINES
+# ORDER FILE INLINE
 # ==========================================================
 
-class TicketInline(admin.TabularInline):
 
-    model = Ticket
+class OrderFileInline(admin.TabularInline):
 
-    extra = 0
-
-    fields = (
-
-        "sender",
-
-        "message",
-
-        "attachment",
-
-        "created_at",
-
-    )
-
-    readonly_fields = (
-
-        "created_at",
-
-    )
-
-    show_change_link = True
-
-
-
-class ProjectProgressInline(admin.TabularInline):
-    model = ProjectProgress
+    model = OrderFile
 
     extra = 0
 
-    fields = (
-
-        "title",
-
-        "percent",
-
-        "created_at",
-
-    )
-
-    readonly_fields = (
-
-        "created_at",
-
-    )
-
-    show_change_link = True
-
-
-
-class ProjectTimelineInline(admin.TabularInline):
-    model = ProjectTimeline
-
-    extra = 0
 
     fields = (
-
-        "title",
-
-        "completed",
-
-        "created_at",
-
-    )
-
-    readonly_fields = (
-
-        "created_at",
-
-    )
-
-    show_change_link = True
-
-
-
-class ProjectTaskInline(admin.TabularInline):
-    model = ProjectTask
-
-    extra = 0
-
-    fields = (
-
-        "title",
-
-        "status",
-
-        "deadline",
-
-        "created_at",
-
-    )
-
-    readonly_fields = (
-
-        "created_at",
-
-    )
-
-    show_change_link = True
-
-
-
-class ProjectVersionInline(admin.TabularInline):
-    model = ProjectVersion
-
-    extra = 0
-
-    fields = (
-
-        "version",
 
         "file",
 
         "description",
 
         "created_at",
-
     )
 
     readonly_fields = (
 
         "created_at",
-
     )
-
-    show_change_link = True
 
 # ==========================================================
 # ORDER ADMIN
@@ -635,24 +791,44 @@ class OrderAdmin(admin.ModelAdmin):
 
         "tracking_code",
 
-        "full_name",
+        "name",
+
+        "phone",
 
         "service",
 
-        "order_status_badge",
+        "status_badge",
 
         "estimated_price",
 
         "created_at",
 
+        "status",
     )
 
     list_display_links = (
 
         "tracking_code",
 
-        "full_name",
+        "name",
+    )
 
+    list_editable = (
+
+        "status",
+    )
+
+    search_fields = (
+
+        "tracking_code",
+
+        "name",
+
+        "phone",
+
+        "email",
+
+        "description",
     )
 
     list_filter = (
@@ -662,21 +838,6 @@ class OrderAdmin(admin.ModelAdmin):
         "service",
 
         "created_at",
-
-    )
-
-    search_fields = (
-
-        "tracking_code",
-
-        "full_name",
-
-        "phone",
-
-        "email",
-
-        "description",
-
     )
 
     autocomplete_fields = (
@@ -684,7 +845,6 @@ class OrderAdmin(admin.ModelAdmin):
         "user",
 
         "service",
-
     )
 
     readonly_fields = (
@@ -699,17 +859,27 @@ class OrderAdmin(admin.ModelAdmin):
 
     )
 
+
     ordering = (
 
         "-created_at",
 
     )
 
-    date_hierarchy = "created_at"
 
-    list_per_page = 25
+    list_per_page = 30
+
 
     save_on_top = True
+
+
+    inlines = (
+
+        OrderFileInline,
+
+    )
+
+
 
     actions = (
 
@@ -719,15 +889,7 @@ class OrderAdmin(admin.ModelAdmin):
 
         "mark_cancelled",
 
-    )
-
-    inlines = (
-
-        TicketInline,
-        ProjectProgressInline,
-        ProjectTimelineInline,
-        ProjectTaskInline,
-        ProjectVersionInline,
+        "mark_pending",
 
     )
 
@@ -743,16 +905,13 @@ class OrderAdmin(admin.ModelAdmin):
 
                     "user",
 
-                    "full_name",
+                    "name",
 
                     "phone",
 
                     "email",
-
                 )
-
             },
-
         ),
 
         (
@@ -768,19 +927,15 @@ class OrderAdmin(admin.ModelAdmin):
                     "description",
 
                     "attachment",
-
                 )
-
             },
-
         ),
 
         (
 
-            "مدیریت پروژه",
+            "مدیریت سفارش",
 
             {
-
                 "fields": (
 
                     "status",
@@ -789,11 +944,425 @@ class OrderAdmin(admin.ModelAdmin):
 
                     "tracking_code",
 
+                    "developers",
+                )
+            },
+        ),
+
+        (
+
+            "اطلاعات سیستم",
+
+            {
+
+                "classes": (
+
+                    "collapse",
+
+                ),
+
+                "fields": (
+
+                    "created_at",
+
+                    "updated_at",
+
                 )
 
             },
 
         ),
+
+    )
+
+
+
+    @admin.display(
+        description="وضعیت"
+    )
+    def status_badge(self, obj):
+
+        return status_badge(obj)
+
+
+
+    @admin.action(
+        description="⏳ تغییر به در حال انجام"
+    )
+    def mark_processing(
+        self,
+        request,
+        queryset,
+    ):
+
+        queryset.update(
+            status="processing"
+        )
+
+
+
+    @admin.action(
+        description="✔ تغییر به تکمیل شده"
+    )
+    def mark_completed(
+        self,
+        request,
+        queryset,
+    ):
+
+        queryset.update(
+            status="completed"
+        )
+
+
+
+    @admin.action(
+        description="❌ تغییر به لغو شده"
+    )
+    def mark_cancelled(
+        self,
+        request,
+        queryset,
+    ):
+
+        queryset.update(
+            status="cancelled"
+        )
+
+
+
+    @admin.action(
+        description="🕒 تغییر به در انتظار"
+    )
+    def mark_pending(
+        self,
+        request,
+        queryset,
+    ):
+
+        queryset.update(
+            status="pending"
+        )
+
+
+
+    def get_queryset(self, request):
+
+        return super().get_queryset(
+            request
+        ).select_related(
+            "user",
+            "service",
+        )
+
+# ==========================================================
+# PAYMENT ADMIN
+# ==========================================================
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+
+
+    list_display = (
+
+        "order",
+
+        "amount",
+
+        "payment_method",
+
+        "status_badge",
+
+        "transaction_id",
+
+        "created_at",
+
+    )
+
+
+    list_display_links = (
+
+        "order",
+
+    )
+
+
+    search_fields = (
+
+        "order__tracking_code",
+
+        "transaction_id",
+
+    )
+
+
+    list_filter = (
+
+        "payment_method",
+
+        "status",
+
+        "created_at",
+
+    )
+
+
+    autocomplete_fields = (
+
+        "order",
+
+    )
+
+
+    readonly_fields = (
+
+        "transaction_id",
+
+        "created_at",
+
+        "updated_at",
+
+    )
+
+
+    ordering = (
+
+        "-created_at",
+
+    )
+
+
+    list_per_page = 30
+
+
+    save_on_top = True
+
+
+
+    fieldsets = (
+
+        (
+
+            "اطلاعات پرداخت",
+
+            {
+
+                "fields": (
+
+                    "order",
+
+                    "amount",
+
+                    "payment_method",
+
+                    "status",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "اطلاعات تراکنش",
+
+            {
+
+                "fields": (
+
+                    "transaction_id",
+
+                    "gateway_response",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "اطلاعات سیستم",
+
+            {
+
+                "classes": (
+
+                    "collapse",
+
+                ),
+
+                "fields": (
+
+                    "created_at",
+
+                    "updated_at",
+
+                )
+
+            },
+
+        ),
+
+    )
+
+
+
+    @admin.display(
+        description="وضعیت"
+    )
+    def status_badge(self, obj):
+
+        return status_badge(obj)
+
+
+
+    def get_queryset(self, request):
+
+        return super().get_queryset(
+            request
+        ).select_related(
+            "order",
+        )
+
+# ==========================================================
+# INVOICE ADMIN
+# ==========================================================
+
+
+@admin.register(Invoice)
+class InvoiceAdmin(admin.ModelAdmin):
+
+
+    list_display = (
+
+        "invoice_number",
+
+        "order",
+
+        "amount",
+
+        "status_badge",
+
+        "created_at",
+
+        "status",
+    )
+
+
+    list_display_links = (
+
+        "invoice_number",
+
+        "order",
+
+    )
+
+
+    list_editable = (
+
+        "status",
+
+    )
+
+
+    search_fields = (
+
+        "invoice_number",
+
+        "order__tracking_code",
+
+        "order__name",
+
+    )
+
+
+    list_filter = (
+
+        "status",
+
+        "created_at",
+
+    )
+
+
+    autocomplete_fields = (
+
+        "order",
+
+    )
+
+
+    readonly_fields = (
+
+        "invoice_number",
+
+        "created_at",
+
+        "updated_at",
+
+    )
+
+
+    ordering = (
+
+        "-created_at",
+
+    )
+
+
+    list_per_page = 30
+
+
+    save_on_top = True
+
+
+
+    fieldsets = (
+
+        (
+
+            "اطلاعات فاکتور",
+
+            {
+
+                "fields": (
+
+                    "order",
+
+                    "invoice_number",
+
+                    "amount",
+
+                    "status",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "توضیحات",
+
+            {
+
+                "fields": (
+
+                    "description",
+
+                )
+
+            },
+
+        ),
+
 
         (
 
@@ -821,358 +1390,88 @@ class OrderAdmin(admin.ModelAdmin):
 
     )
 
+
+
     @admin.display(
-
         description="وضعیت"
-
     )
+    def status_badge(self, obj):
 
-    def order_status_badge(self, obj):
+        return status_badge(obj)
 
-        return order_status_badge(obj)
 
-    @admin.action(
 
-        description="تغییر وضعیت به در حال انجام"
+    def get_queryset(self, request):
 
-    )
-
-    def mark_processing(
-
-        self,
-
-        request,
-
-        queryset,
-
-    ):
-
-        queryset.update(
-
-            status="processing"
-
-        )
-
-    @admin.action(
-
-        description="تغییر وضعیت به تکمیل شده"
-
-    )
-
-    def mark_completed(
-
-        self,
-
-        request,
-
-        queryset,
-
-    ):
-
-        queryset.update(
-
-            status="completed"
-
-        )
-
-    @admin.action(
-
-        description="تغییر وضعیت به لغو شده"
-
-    )
-
-    def mark_cancelled(
-
-        self,
-
-        request,
-
-        queryset,
-
-    ):
-
-        queryset.update(
-
-            status="cancelled"
-        )
-
-    def get_queryset(
-
-        self,
-
-        request,
-
-    ):
-
-        return (
-
-            super()
-
-            .get_queryset(request)
-
-            .select_related(
-
-                "user",
-
-                "service",
-
-            )
-
+        return super().get_queryset(
+            request
+        ).select_related(
+            "order",
         )
 
 # ==========================================================
-# TICKET ADMIN
+# CONTACT MESSAGE ADMIN
 # ==========================================================
 
-@admin.register(Ticket)
-class TicketAdmin(admin.ModelAdmin):
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+
 
     list_display = (
 
-        "order",
+        "name",
 
-        "sender",
+        "email",
+
+        "phone",
+
+        "subject",
+
+        "is_read",
 
         "created_at",
 
     )
 
+
     list_display_links = (
 
-        "order",
+        "name",
 
     )
 
+
+    list_editable = (
+
+        "is_read",
+
+    )
+
+
     search_fields = (
 
-        "order__tracking_code",
+        "name",
 
-        "sender__username",
+        "email",
+
+        "phone",
+
+        "subject",
 
         "message",
 
     )
 
-    list_filter = (
-
-        "created_at",
-
-    )
-
-    autocomplete_fields = (
-
-        "order",
-
-        "sender",
-
-    )
-
-    readonly_fields = (
-
-        "created_at",
-
-    )
-
-    ordering = (
-
-        "-created_at",
-
-    )
-
-    date_hierarchy = "created_at"
-
-    list_per_page = 30
-
-    save_on_top = True
-
-
-# ==========================================================
-# PROGRESS ADMIN
-# ==========================================================
-
-@admin.register(ProjectProgress)
-class ProgressAdmin(admin.ModelAdmin):
-
-    list_display = (
-
-        "order",
-
-        "title",
-
-        "progress_badge",
-
-        "created_at",
-
-    )
-
-    list_display_links = (
-
-        "title",
-
-    )
-
-    search_fields = (
-
-        "title",
-
-        "description",
-
-        "order__tracking_code",
-
-    )
 
     list_filter = (
 
-        "created_at",
-
-    )
-
-    autocomplete_fields = (
-
-        "order",
-
-    )
-
-    readonly_fields = (
+        "is_read",
 
         "created_at",
 
     )
 
-    ordering = (
-
-        "-created_at",
-
-    )
-
-    date_hierarchy = "created_at"
-
-    list_per_page = 30
-
-    save_on_top = True
-
-    @admin.display(description="پیشرفت")
-
-    def progress_badge(self, obj):
-
-        return progress_badge(obj)
-
-
-# ==========================================================
-# TIMELINE ADMIN
-# ==========================================================
-
-@admin.register(ProjectTimeline)
-class TimelineAdmin(admin.ModelAdmin):
-
-    list_display = (
-        "order",
-        "title",
-        "created_at",
-    )
-
-    list_display_links = (
-
-        "title",
-
-    )
-
-    search_fields = (
-
-        "title",
-
-        "description",
-
-        "order__tracking_code",
-
-    )
-
-    list_filter = (
-        "created_at",
-    )
-
-    autocomplete_fields = (
-
-        "order",
-
-    )
-
-    readonly_fields = (
-
-        "created_at",
-
-    )
-
-    ordering = (
-
-        "-created_at",
-
-    )
-
-    date_hierarchy = "created_at"
-
-    list_per_page = 30
-
-    save_on_top = True
-
-# ==========================================================
-# TASK ADMIN
-# ==========================================================
-
-@admin.register(ProjectTask)
-class TaskAdmin(admin.ModelAdmin):
-
-    list_display = (
-
-        "order",
-
-        "title",
-
-        "status",
-
-        "deadline",
-
-        "created_at",
-
-    )
-
-    list_display_links = (
-
-        "title",
-
-    )
-
-    list_editable = (
-
-        "status",
-
-    )
-
-    search_fields = (
-
-        "title",
-
-        "description",
-
-        "order__tracking_code",
-
-    )
-
-    list_filter = (
-
-        "status",
-
-        "deadline",
-
-        "created_at",
-
-    )
-
-    autocomplete_fields = (
-
-        "order",
-
-    )
 
     readonly_fields = (
 
@@ -1182,67 +1481,6 @@ class TaskAdmin(admin.ModelAdmin):
 
     )
 
-    ordering = (
-
-        "-created_at",
-
-    )
-
-    date_hierarchy = "created_at"
-
-    list_per_page = 30
-
-    save_on_top = True
-
-
-# ==========================================================
-# VERSION ADMIN
-# ==========================================================
-
-@admin.register(ProjectVersion)
-class VersionAdmin(admin.ModelAdmin):
-
-    list_display = (
-
-        "order",
-
-        "version",
-
-        "file_download",
-
-        "created_at",
-
-    )
-
-    list_display_links = (
-
-        "version",
-
-    )
-
-    search_fields = (
-
-        "version",
-
-        "description",
-
-        "order__tracking_code",
-
-    )
-
-    autocomplete_fields = (
-
-        "order",
-
-    )
-
-    readonly_fields = (
-
-        "created_at",
-
-        "file_download",
-
-    )
 
     ordering = (
 
@@ -1250,73 +1488,124 @@ class VersionAdmin(admin.ModelAdmin):
 
     )
 
-    date_hierarchy = "created_at"
 
     list_per_page = 30
 
+
     save_on_top = True
 
-    @admin.display(description="دانلود فایل")
 
-    def file_download(self, obj):
 
-        return file_download(obj)
+    fieldsets = (
+
+        (
+
+            "اطلاعات فرستنده",
+
+            {
+
+                "fields": (
+
+                    "name",
+
+                    "email",
+
+                    "phone",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "پیام",
+
+            {
+
+                "fields": (
+
+                    "subject",
+
+                    "message",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "مدیریت",
+
+            {
+
+                "fields": (
+
+                    "is_read",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "اطلاعات سیستم",
+
+            {
+
+                "classes": (
+
+                    "collapse",
+
+                ),
+
+                "fields": (
+
+                    "created_at",
+
+                    "updated_at",
+
+                )
+
+            },
+
+        ),
+
+    )
+
+
+
 
 
 # ==========================================================
-# INVOICE ADMIN
+# SITE SETTING ADMIN
 # ==========================================================
 
-@admin.register(Invoice)
-class InvoiceAdmin(admin.ModelAdmin):
+
+@admin.register(SiteSetting)
+class SiteSettingAdmin(admin.ModelAdmin):
+
 
     list_display = (
 
-        "order",
+        "site_name",
 
-        "amount",
+        "phone",
 
-        "status",
+        "email",
 
-        "due_date",
-
-        "created_at",
+        "updated_at",
 
     )
 
-    list_display_links = (
-
-        "order",
-
-    )
-
-    list_editable = (
-
-        "status",
-
-    )
-
-    search_fields = (
-
-        "order__tracking_code",
-
-    )
-
-    list_filter = (
-
-        "status",
-
-        "due_date",
-
-        "created_at",
-
-    )
-
-    autocomplete_fields = (
-
-        "order",
-
-    )
 
     readonly_fields = (
 
@@ -1326,226 +1615,601 @@ class InvoiceAdmin(admin.ModelAdmin):
 
     )
 
+
+    fieldsets = (
+
+        (
+
+            "اطلاعات برند",
+
+            {
+
+                "fields": (
+
+                    "site_name",
+
+                    "logo",
+
+                    "description",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "ارتباطات",
+
+            {
+
+                "fields": (
+
+                    "email",
+
+                    "phone",
+
+                    "address",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "شبکه‌های اجتماعی",
+
+            {
+
+                "fields": (
+
+                    "instagram",
+
+                    "telegram",
+
+                    "linkedin",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "سیستم",
+
+            {
+
+                "classes": (
+
+                    "collapse",
+
+                ),
+
+                "fields": (
+
+                    "created_at",
+
+                    "updated_at",
+
+                )
+
+            },
+
+        ),
+
+    )
+
+
+
+
+
+# ==========================================================
+# FAQ ADMIN
+# ==========================================================
+
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+
+
+    list_display = (
+
+        "question",
+
+        "order",
+
+        "is_active",
+
+        "created_at",
+
+    )
+
+
+    list_display_links = (
+
+        "question",
+
+    )
+
+
+    list_editable = (
+
+        "order",
+
+        "is_active",
+
+    )
+
+
+    search_fields = (
+
+        "question",
+
+        "answer",
+
+    )
+
+
+    list_filter = (
+
+        "is_active",
+
+        "created_at",
+
+    )
+
+
     ordering = (
+
+        "order",
 
         "-created_at",
 
     )
 
-    date_hierarchy = "created_at"
-
-    list_per_page = 30
-
-    save_on_top = True
-
-# ==========================================================
-# CONTACT ADMIN
-# ==========================================================
-
-@admin.register(Contact)
-class ContactAdmin(admin.ModelAdmin):
-
-    list_display = (
-
-        "full_name",
-
-        "subject",
-
-        "phone",
-
-        "email",
-
-        "is_read",
-
-        "created_at",
-
-    )
-
-    list_display_links = (
-
-        "full_name",
-
-    )
-
-    list_editable = (
-
-        "is_read",
-
-    )
-
-    search_fields = (
-
-        "full_name",
-
-        "subject",
-
-        "phone",
-
-        "email",
-
-        "message",
-
-    )
-
-    list_filter = (
-
-        "is_read",
-
-        "created_at",
-
-    )
 
     readonly_fields = (
 
         "created_at",
 
-    )
-
-    ordering = (
-
-        "-created_at",
+        "updated_at",
 
     )
 
-    date_hierarchy = "created_at"
 
     list_per_page = 30
 
+
     save_on_top = True
 
-
 # ==========================================================
-# CAREER ADMIN
+# TEAM ADMIN
 # ==========================================================
 
-@admin.register(Career)
-class CareerAdmin(admin.ModelAdmin):
+
+@admin.register(Team)
+class TeamAdmin(admin.ModelAdmin):
+
 
     list_display = (
 
-        "title",
+        "preview",
 
-        "salary",
+        "name",
 
-        "active",
+        "role",
+
+        "is_active",
+
+        "order",
 
         "created_at",
 
     )
+
 
     list_display_links = (
 
-        "title",
+        "preview",
+
+        "name",
 
     )
+
 
     list_editable = (
 
-        "active",
+        "is_active",
+
+        "order",
 
     )
+
 
     search_fields = (
 
-        "title",
+        "name",
 
-        "description",
+        "role",
 
-        "requirements",
+        "bio",
 
     )
+
 
     list_filter = (
 
-        "active",
+        "is_active",
 
         "created_at",
 
     )
+
 
     readonly_fields = (
 
+        "preview",
+
         "created_at",
+
+        "updated_at",
 
     )
 
+
     ordering = (
+
+        "order",
 
         "-created_at",
 
     )
 
-    date_hierarchy = "created_at"
 
     list_per_page = 25
 
+
     save_on_top = True
+
+
+
+    fieldsets = (
+
+        (
+
+            "اطلاعات عضو تیم",
+
+            {
+
+                "fields": (
+
+                    "name",
+
+                    "role",
+
+                    "bio",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "تصویر",
+
+            {
+
+                "fields": (
+
+                    "avatar",
+
+                    "preview",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "تنظیمات",
+
+            {
+
+                "fields": (
+
+                    "order",
+
+                    "is_active",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "سیستم",
+
+            {
+
+                "classes": (
+
+                    "collapse",
+
+                ),
+
+                "fields": (
+
+                    "created_at",
+
+                    "updated_at",
+
+                )
+
+            },
+
+        ),
+
+    )
+
+
+
+    @admin.display(
+        description="تصویر"
+    )
+    def preview(self, obj):
+
+        return image_preview(
+            obj,
+            "avatar",
+        )
+
+
+
+
+
+# ==========================================================
+# REVIEW ADMIN
+# ==========================================================
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+
+
+    list_display = (
+
+        "name",
+
+        "company",
+
+        "rating",
+
+        "is_active",
+
+        "created_at",
+
+    )
+
+
+    list_display_links = (
+
+        "name",
+
+    )
+
+
+    list_editable = (
+
+        "rating",
+
+        "is_active",
+
+    )
+
+
+    search_fields = (
+
+        "name",
+
+        "company",
+
+        "message",
+
+    )
+
+
+    list_filter = (
+
+        "rating",
+
+        "is_active",
+
+        "created_at",
+
+    )
+
+
+    readonly_fields = (
+
+        "created_at",
+
+        "updated_at",
+
+    )
+
+
+    ordering = (
+
+        "-created_at",
+
+    )
+
+
+    list_per_page = 30
+
+
+    save_on_top = True
+
+
+
+    fieldsets = (
+
+        (
+
+            "اطلاعات مشتری",
+
+            {
+
+                "fields": (
+
+                    "name",
+
+                    "company",
+
+                    "message",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "امتیاز",
+
+            {
+
+                "fields": (
+
+                    "rating",
+
+                    "is_active",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "سیستم",
+
+            {
+
+                "classes": (
+
+                    "collapse",
+
+                ),
+
+                "fields": (
+
+                    "created_at",
+
+                    "updated_at",
+
+                )
+
+            },
+
+        ),
+
+    )
+
+# ==========================================================
+# BLOG CATEGORY ADMIN
+# ==========================================================
+
+
+@admin.register(BlogCategory)
+class BlogCategoryAdmin(admin.ModelAdmin):
+
+
+    list_display = (
+
+        "title",
+
+        "slug",
+
+        "is_active",
+
+        "created_at",
+
+    )
+
+
+    list_display_links = (
+
+        "title",
+
+    )
+
+
+    list_editable = (
+
+        "is_active",
+
+    )
+
+
+    search_fields = (
+
+        "title",
+
+        "description",
+
+    )
+
+
+    list_filter = (
+
+        "is_active",
+
+        "created_at",
+
+    )
+
 
     prepopulated_fields = {
 
-        "slug": ("title",)
+        "slug": (
+
+            "title",
+
+        )
 
     }
 
 
-# ==========================================================
-# JOB APPLICATION ADMIN
-# ==========================================================
-
-@admin.register(JobApplication)
-class JobApplicationAdmin(admin.ModelAdmin):
-
-    list_display = (
-
-        "full_name",
-
-        "career",
-
-        "phone",
-
-        "email",
-
-        "created_at",
-
-    )
-
-    list_display_links = (
-
-        "full_name",
-
-    )
-
-    search_fields = (
-
-        "full_name",
-
-        "phone",
-
-        "email",
-
-        "career__title",
-
-    )
-
-    list_filter = (
-
-        "career",
-
-        "created_at",
-
-    )
-
-    autocomplete_fields = (
-
-        "career",
-
-    )
-
     readonly_fields = (
 
         "created_at",
 
+        "updated_at",
+
     )
+
 
     ordering = (
 
@@ -1553,257 +2217,328 @@ class JobApplicationAdmin(admin.ModelAdmin):
 
     )
 
-    date_hierarchy = "created_at"
 
-    list_per_page = 30
+    list_per_page = 25
+
 
     save_on_top = True
 
+
+
+
+
 # ==========================================================
-# ADMIN ACTIONS
+# TAG ADMIN
 # ==========================================================
 
-@admin.action(description="✔ تغییر وضعیت به تکمیل شده")
-def make_completed(modeladmin, request, queryset):
 
-    queryset.update(
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
 
-        status="completed"
+
+    list_display = (
+
+        "name",
+
+        "slug",
+
+        "created_at",
 
     )
 
 
-@admin.action(description="⏳ تغییر وضعیت به در حال انجام")
-def make_processing(modeladmin, request, queryset):
+    list_display_links = (
 
-    queryset.update(
-
-        status="processing"
+        "name",
 
     )
 
 
-@admin.action(description="❌ تغییر وضعیت به لغو شده")
-def make_cancelled(modeladmin, request, queryset):
+    search_fields = (
 
-    queryset.update(
-
-        status="cancelled"
+        "name",
 
     )
 
 
-@admin.action(description="📌 تغییر وضعیت به در انتظار")
-def make_pending(modeladmin, request, queryset):
+    prepopulated_fields = {
 
-    queryset.update(
+        "slug": (
 
-        status="pending"
-
-    )
-
-
-# ==========================================================
-# ADD ACTIONS TO ORDER ADMIN
-# ==========================================================
-
-OrderAdmin.actions = (
-
-    make_completed,
-
-    make_processing,
-
-    make_cancelled,
-
-    make_pending,
-
-)
-
-
-# ==========================================================
-# OPTIMIZED QUERYSETS
-# ==========================================================
-
-def order_queryset(self, request):
-
-    return (
-
-        super(OrderAdmin, self)
-
-        .get_queryset(request)
-
-        .select_related(
-
-            "user",
-
-            "service",
+            "name",
 
         )
 
+    }
+
+
+    readonly_fields = (
+
+        "created_at",
+
+        "updated_at",
+
     )
 
 
-OrderAdmin.get_queryset = order_queryset
+    ordering = (
+
+        "name",
+
+    )
 
 
-# ==========================================================
-# ADMIN SITE OPTIONS
-# ==========================================================
 
-admin.site.site_title = "Nexora Admin"
-
-admin.site.site_header = "Nexora Web Management"
-
-admin.site.index_title = "Control Panel"
-
-admin.site.empty_value_display = "-"
-
-# ==========================================================
-# EXTRA ADMIN FEATURES
-# ==========================================================
-
-@admin.display(description="تعداد سفارش‌ها")
-def orders_count(obj):
-
-    return obj.order_set.count()
-
-
-@admin.display(description="تعداد نمونه‌کارها")
-def portfolios_count(obj):
-
-    return obj.portfolio_set.count()
-
-
-@admin.display(description="وضعیت فاکتور")
-def invoice_status(obj):
-
-    try:
-
-        return obj.invoice.get_status_display()
-
-    except Exception:
-
-        return "-"
-
-
-@admin.display(description="تعداد تیکت‌ها")
-def tickets_count(obj):
-
-    return obj.tickets.count()
 
 
 # ==========================================================
-# EXTRA CONFIG
+# BLOG ADMIN
 # ==========================================================
 
-OrderAdmin.list_select_related = (
 
-    "user",
-
-    "service",
-
-)
-
-PortfolioAdmin.list_select_related = (
-
-    "service",
-
-)
-
-InvoiceAdmin.list_select_related = (
-
-    "order",
-
-)
-
-TicketAdmin.list_select_related = (
-
-    "order",
-
-    "sender",
-
-)
-
-TaskAdmin.list_select_related = (
-
-    "order",
-
-)
-
-ProgressAdmin.list_select_related = (
-
-    "order",
-
-)
-
-TimelineAdmin.list_select_related = (
-
-    "order",
-
-)
-
-VersionAdmin.list_select_related = (
-
-    "order",
-
-)
-
-JobApplicationAdmin.list_select_related = (
-
-    "career",
-
-)
+@admin.register(Blog)
+class BlogAdmin(admin.ModelAdmin):
 
 
-# ==========================================================
-# SAVE BUTTONS
-# ==========================================================
+    list_display = (
 
-ServiceAdmin.save_as = True
+        "preview",
 
-PortfolioAdmin.save_as = True
+        "title",
 
-OrderAdmin.save_as = True
+        "category",
 
-CareerAdmin.save_as = True
+        "author",
+
+        "views",
+
+        "is_published",
+
+        "created_at",
+
+    )
 
 
-# ==========================================================
-# SEARCH HELP
-# ==========================================================
+    list_display_links = (
 
-ServiceAdmin.search_help_text = "عنوان سرویس"
+        "preview",
 
-PortfolioAdmin.search_help_text = "عنوان پروژه یا نام مشتری"
+        "title",
 
-OrderAdmin.search_help_text = "کد رهگیری، نام مشتری یا ایمیل"
+    )
 
-TicketAdmin.search_help_text = "کد سفارش یا پیام"
 
-CareerAdmin.search_help_text = "عنوان موقعیت شغلی"
+    list_editable = (
 
-JobApplicationAdmin.search_help_text = "نام متقاضی یا ایمیل"
+        "is_published",
 
-InvoiceAdmin.search_help_text = "کد رهگیری سفارش"
+    )
 
-# ==========================================================
-# FINAL ADMIN CONFIG
-# ==========================================================
 
-admin.site.enable_nav_sidebar = True
+    search_fields = (
 
-admin.site.site_title = "Nexora Administration"
+        "title",
 
-admin.site.site_header = "Nexora Control Panel"
+        "content",
 
-admin.site.index_title = "Dashboard"
+        "slug",
+
+    )
+
+
+    list_filter = (
+
+        "category",
+
+        "is_published",
+
+        "created_at",
+
+    )
+
+
+    autocomplete_fields = (
+
+        "category",
+
+        "author",
+
+    )
+
+
+    filter_horizontal = (
+
+        "tags",
+
+    )
+
+
+    readonly_fields = (
+
+        "preview",
+
+        "views",
+
+        "created_at",
+
+        "updated_at",
+
+    )
+
+
+    prepopulated_fields = {
+
+        "slug": (
+
+            "title",
+
+        )
+
+    }
+
+
+    ordering = (
+
+        "-created_at",
+
+    )
+
+
+    list_per_page = 25
+
+
+    save_on_top = True
+
+
+
+    fieldsets = (
+
+        (
+
+            "اطلاعات مقاله",
+
+            {
+
+                "fields": (
+
+                    "title",
+
+                    "slug",
+
+                    "category",
+
+                    "author",
+
+                    "content",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "رسانه",
+
+            {
+
+                "fields": (
+
+                    "image",
+
+                    "preview",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "تنظیمات",
+
+            {
+
+                "fields": (
+
+                    "tags",
+
+                    "is_published",
+
+                )
+
+            },
+
+        ),
+
+
+        (
+
+            "آمار",
+
+            {
+
+                "classes": (
+
+                    "collapse",
+
+                ),
+
+                "fields": (
+
+                    "views",
+
+                    "created_at",
+
+                    "updated_at",
+
+                )
+
+            },
+
+        ),
+
+    )
+
+
+
+    @admin.display(
+        description="تصویر"
+    )
+    def preview(self, obj):
+
+        return image_preview(
+            obj,
+            "image",
+        )
+
+
+
+    def get_queryset(self, request):
+
+        return super().get_queryset(
+            request
+        ).select_related(
+            "category",
+            "author",
+        )
+
+
+
 
 
 # ==========================================================
 # GLOBAL ADMIN SETTINGS
 # ==========================================================
 
+
 for model_admin in (
+
+    CategoryAdmin,
 
     ServiceAdmin,
 
@@ -1811,23 +2546,25 @@ for model_admin in (
 
     OrderAdmin,
 
-    TicketAdmin,
-
-    ProgressAdmin,
-
-    TimelineAdmin,
-
-    TaskAdmin,
-
-    VersionAdmin,
+    PaymentAdmin,
 
     InvoiceAdmin,
 
-    ContactAdmin,
+    ContactMessageAdmin,
 
-    CareerAdmin,
+    SiteSettingAdmin,
 
-    JobApplicationAdmin,
+    FAQAdmin,
+
+    TeamAdmin,
+
+    ReviewAdmin,
+
+    BlogCategoryAdmin,
+
+    TagAdmin,
+
+    BlogAdmin,
 
 ):
 
@@ -1835,12 +2572,14 @@ for model_admin in (
 
     model_admin.list_per_page = 25
 
-    model_admin.show_facets = admin.ShowFacets.ALWAYS
 
 
 # ==========================================================
-# ADMIN LOG CONFIG
+# FINAL ADMIN CONFIG
 # ==========================================================
+
+
+admin.site.enable_nav_sidebar = True
 
 admin.site.empty_value_display = "-"
 
