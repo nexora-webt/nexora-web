@@ -7,6 +7,7 @@ from django.shortcuts import (
     redirect,
     get_object_or_404,
 )
+from .forms import JobApplicationForm
 
 from django.contrib import messages
 
@@ -815,6 +816,43 @@ def error_500(request):
             **website_context(),
         },
         status=500,
+    )
+
+def careers(request):
+    return render(
+        request,
+        "careers.html"
+    )
+
+def careers(request):
+
+    form = JobApplicationForm()
+
+    if request.method == "POST":
+
+        form = JobApplicationForm(
+            request.POST,
+            request.FILES
+        )
+
+        if form.is_valid():
+
+            application = form.save()
+
+            messages.success(
+                request,
+                "درخواست همکاری شما با موفقیت ثبت شد."
+            )
+
+            return redirect("core:careers")
+
+
+    return render(
+        request,
+        "careers.html",
+        {
+            "form": form
+        }
     )
 
 from django.shortcuts import (

@@ -103,7 +103,11 @@ urlpatterns = [
         name="order_detail",
     ),
 
-
+    path(
+        "careers/",
+        views.careers,
+        name="careers",
+    ),
 
     # ==========================================================
     # INVOICE PDF

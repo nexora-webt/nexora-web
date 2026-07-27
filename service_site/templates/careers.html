@@ -1,48 +1,1862 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+
+{% block title %}
+Nexora Web | Careers
+{% endblock %}
+
+
+{% block description %}
+فرصت‌های شغلی و همکاری با تیم Nexora Web
+{% endblock %}
+
+
+
+{% block extra_css %}
+
+<link rel="stylesheet"
+href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+{% endblock %}
+
+
+
+
 
 {% block content %}
 
-<div class="container py-5">
 
-    <h1 class="mb-5">
-        فرصت‌های شغلی
-    </h1>
 
-    {% for job in jobs %}
+<!-- ========================= -->
+<!-- Hero Section -->
+<!-- ========================= -->
 
-    <div class="card p-4 mb-3">
 
-        <h3>{{ job.title }}</h3>
+<section class="hero position-relative overflow-hidden">
 
-        <p>{{ job.description }}</p>
 
-        <p>{{ job.requirements }}</p>
+<div class="container">
 
-    </div>
 
-    {% endfor %}
+<div class="row align-items-center min-vh-100">
 
-    <hr>
 
-    <h2>ارسال رزومه</h2>
+<div class="col-lg-7"
+data-aos="fade-left">
 
-    <form method="post"
-          enctype="multipart/form-data">
 
-        {% csrf_token %}
+<span class="badge bg-danger px-4 py-2 mb-4">
 
-        {{ form.as_p }}
+Careers
 
-        <button
-            class="btn btn-danger"
-            type="submit">
+</span>
 
-            ارسال رزومه
 
-        </button>
 
-    </form>
+<h1 class="display-3 fw-bold text-white">
+
+به تیم Nexora Web بپیوندید
+
+</h1>
+
+
+
+<p class="lead text-white mt-4">
+
+ما به دنبال افراد خلاق، متخصص و علاقه‌مند به تکنولوژی هستیم تا آینده دیجیتال را با هم بسازیم.
+
+</p>
+
+
+
+
+<div class="d-flex gap-3 mt-5 flex-wrap">
+
+
+<a href="#apply"
+class="btn btn-danger btn-lg px-5">
+
+ارسال رزومه
+
+</a>
+
+
+
+<a href="#process"
+class="btn btn-outline-light btn-lg px-5">
+
+فرآیند استخدام
+
+</a>
+
 
 </div>
+
+
+
+
+
+<div class="row mt-5 g-4">
+
+
+<div class="col-4">
+
+
+<h2 class="text-danger fw-bold">
+
++10
+
+</h2>
+
+
+<p class="text-light">
+
+تخصص مختلف
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="col-4">
+
+
+<h2 class="text-danger fw-bold">
+
+Remote
+
+</h2>
+
+
+<p class="text-light">
+
+همکاری انعطاف‌پذیر
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="col-4">
+
+
+<h2 class="text-danger fw-bold">
+
+24/7
+
+</h2>
+
+
+<p class="text-light">
+
+رشد و یادگیری
+
+</p>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+
+
+<div class="col-lg-5 text-center"
+data-aos="fade-right">
+
+
+<img
+
+src="{% static 'img/logo-web.png' %}"
+
+class="img-fluid"
+
+alt="Nexora Careers">
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- Why Nexora -->
+<!-- ========================= -->
+
+
+<section class="py-5">
+
+
+<div class="container">
+
+
+<div class="text-center mb-5">
+
+
+<span class="badge bg-danger mb-3">
+
+Why Nexora
+
+</span>
+
+
+
+<h2 class="display-5 fw-bold">
+
+چرا Nexora؟
+
+</h2>
+
+
+
+<p class="text-muted">
+
+محیطی برای رشد، یادگیری و ساخت محصولات حرفه‌ای.
+
+</p>
+
+
+</div>
+
+
+
+
+<div class="row g-4">
+
+
+
+<div class="col-lg-3 col-md-6">
+
+
+<div class="glass p-4 text-center h-100">
+
+
+<i class="fa-solid fa-rocket fa-3x text-danger mb-4"></i>
+
+
+
+<h5 class="fw-bold">
+
+رشد حرفه‌ای
+
+</h5>
+
+
+
+<p>
+
+کار روی پروژه‌های واقعی و افزایش تجربه.
+
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="col-lg-3 col-md-6">
+
+
+<div class="glass p-4 text-center h-100">
+
+
+<i class="fa-solid fa-code fa-3x text-danger mb-4"></i>
+
+
+
+<h5 class="fw-bold">
+
+تکنولوژی روز
+
+</h5>
+
+
+
+<p>
+
+استفاده از ابزارها و فریم‌ورک‌های مدرن.
+
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="col-lg-3 col-md-6">
+
+
+<div class="glass p-4 text-center h-100">
+
+
+<i class="fa-solid fa-users fa-3x text-danger mb-4"></i>
+
+
+
+<h5 class="fw-bold">
+
+تیم حرفه‌ای
+
+</h5>
+
+
+
+<p>
+
+همکاری با افراد خلاق و متخصص.
+
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="col-lg-3 col-md-6">
+
+
+<div class="glass p-4 text-center h-100">
+
+
+<i class="fa-solid fa-globe fa-3x text-danger mb-4"></i>
+
+
+
+<h5 class="fw-bold">
+
+فرصت جهانی
+
+</h5>
+
+
+
+<p>
+
+ساخت محصولات قابل توسعه برای بازار جهانی.
+
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- Company Culture -->
+<!-- ========================= -->
+
+
+<section class="py-5 bg-dark text-white">
+
+
+<div class="container">
+
+
+<div class="row align-items-center g-5">
+
+
+
+<div class="col-lg-6"
+data-aos="fade-right">
+
+
+<img
+
+src="{% static 'img/team-placeholder.png' %}"
+
+class="img-fluid rounded shadow"
+
+alt="Nexora Team">
+
+
+</div>
+
+
+
+
+
+<div class="col-lg-6"
+data-aos="fade-left">
+
+
+<span class="badge bg-danger mb-3">
+
+Our Culture
+
+</span>
+
+
+
+<h2 class="display-5 fw-bold">
+
+فرهنگ کاری Nexora
+
+</h2>
+
+
+
+<p class="lead mt-4">
+
+در Nexora باور داریم که بهترین محصولات توسط تیم‌هایی ساخته می‌شوند که یاد می‌گیرند، تجربه می‌کنند و ایده‌های جدید را اجرا می‌کنند.
+
+</p>
+
+
+
+<p>
+
+ما محیطی ایجاد می‌کنیم که افراد بتوانند مهارت‌های خود را توسعه دهند، مسئولیت بگیرند و در پروژه‌های واقعی تاثیرگذار باشند.
+
+</p>
+
+
+
+
+<div class="row mt-4 g-3">
+
+
+<div class="col-6">
+
+
+<div class="glass p-3 text-center">
+
+
+<h3 class="text-danger fw-bold">
+
+100%
+
+</h3>
+
+
+<p class="mb-0">
+
+یادگیری
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="col-6">
+
+
+<div class="glass p-3 text-center">
+
+
+<h3 class="text-danger fw-bold">
+
+Team
+
+</h3>
+
+
+<p class="mb-0">
+
+همکاری
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- Technologies -->
+<!-- ========================= -->
+
+
+<section class="py-5">
+
+
+<div class="container">
+
+
+<div class="text-center mb-5">
+
+
+<span class="badge bg-danger mb-3">
+
+Technology
+
+</span>
+
+
+
+<h2 class="display-5 fw-bold">
+
+تکنولوژی‌هایی که استفاده می‌کنیم
+
+</h2>
+
+
+
+<p class="text-muted">
+
+اعضای تیم Nexora با ابزارهای مدرن کار می‌کنند.
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+<div class="row g-4 text-center">
+
+
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<i class="fa-brands fa-python fa-3x text-danger mb-3"></i>
+
+<h5>
+Python
+</h5>
+
+</div>
+
+</div>
+
+
+
+
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<i class="fa-solid fa-server fa-3x text-danger mb-3"></i>
+
+<h5>
+Django
+</h5>
+
+</div>
+
+</div>
+
+
+
+
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<i class="fa-brands fa-js fa-3x text-danger mb-3"></i>
+
+<h5>
+JavaScript
+</h5>
+
+</div>
+
+</div>
+
+
+
+
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<i class="fa-brands fa-react fa-3x text-danger mb-3"></i>
+
+<h5>
+React
+</h5>
+
+</div>
+
+</div>
+
+
+
+
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<i class="fa-solid fa-palette fa-3x text-danger mb-3"></i>
+
+<h5>
+UI/UX
+</h5>
+
+</div>
+
+</div>
+
+
+
+
+
+<div class="col-lg-2 col-md-4 col-6">
+
+<div class="glass p-4 h-100">
+
+<i class="fa-solid fa-brain fa-3x text-danger mb-3"></i>
+
+<h5>
+AI
+</h5>
+
+</div>
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+<!-- ========================= -->
+<!-- Open Positions -->
+<!-- ========================= -->
+
+
+<section class="py-5 bg-light">
+
+
+<div class="container">
+
+
+<div class="text-center mb-5">
+
+
+<span class="badge bg-danger mb-3">
+
+Jobs
+
+</span>
+
+
+
+<h2 class="display-5 fw-bold">
+
+موقعیت‌های شغلی
+
+</h2>
+
+
+
+<p class="text-muted">
+
+اگر مهارت و انگیزه دارید، خوشحال می‌شویم شما را در تیم Nexora ببینیم.
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="row g-4">
+
+
+
+
+
+<div class="col-lg-4">
+
+
+<div class="card border-0 shadow h-100">
+
+
+<div class="card-body p-4">
+
+
+<div class="mb-3">
+
+<i class="fa-solid fa-code fa-3x text-danger"></i>
+
+</div>
+
+
+
+<h4 class="fw-bold">
+
+توسعه‌دهنده وب
+
+</h4>
+
+
+
+<p class="text-muted">
+
+توسعه وب‌سایت‌ها و وب‌اپلیکیشن‌های حرفه‌ای با تکنولوژی‌های روز.
+
+</p>
+
+
+
+<div class="mb-3">
+
+
+<span class="badge bg-dark">
+
+Django
+
+</span>
+
+
+<span class="badge bg-dark">
+
+Python
+
+</span>
+
+
+<span class="badge bg-dark">
+
+JavaScript
+
+</span>
+
+
+</div>
+
+
+
+<a href="#apply"
+class="btn btn-outline-danger w-100">
+
+ارسال درخواست
+
+</a>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="col-lg-4">
+
+
+<div class="card border-0 shadow h-100">
+
+
+<div class="card-body p-4">
+
+
+<div class="mb-3">
+
+<i class="fa-solid fa-paintbrush fa-3x text-danger"></i>
+
+</div>
+
+
+
+<h4 class="fw-bold">
+
+طراح UI/UX
+
+</h4>
+
+
+
+<p class="text-muted">
+
+طراحی تجربه کاربری و رابط‌های مدرن برای محصولات دیجیتال.
+
+</p>
+
+
+
+<div class="mb-3">
+
+
+<span class="badge bg-dark">
+
+Figma
+
+</span>
+
+
+<span class="badge bg-dark">
+
+UI Design
+
+</span>
+
+
+<span class="badge bg-dark">
+
+UX
+
+</span>
+
+
+</div>
+
+
+
+<a href="#apply"
+class="btn btn-outline-danger w-100">
+
+ارسال درخواست
+
+</a>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div class="col-lg-4">
+
+
+<div class="card border-0 shadow h-100">
+
+
+<div class="card-body p-4">
+
+
+<div class="mb-3">
+
+<i class="fa-solid fa-bullhorn fa-3x text-danger"></i>
+
+</div>
+
+
+
+<h4 class="fw-bold">
+
+دیجیتال مارکتینگ
+
+</h4>
+
+
+
+<p class="text-muted">
+
+کمک به رشد برندها با استراتژی‌های بازاریابی دیجیتال.
+
+</p>
+
+
+
+<div class="mb-3">
+
+
+<span class="badge bg-dark">
+
+SEO
+
+</span>
+
+
+<span class="badge bg-dark">
+
+Marketing
+
+</span>
+
+
+<span class="badge bg-dark">
+
+Social
+
+</span>
+
+
+</div>
+
+
+
+<a href="#apply"
+class="btn btn-outline-danger w-100">
+
+ارسال درخواست
+
+</a>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- Hiring Process -->
+<!-- ========================= -->
+
+
+<section id="process"
+class="py-5">
+
+
+<div class="container">
+
+
+<div class="text-center mb-5">
+
+
+<span class="badge bg-danger mb-3">
+
+Process
+
+</span>
+
+
+
+<h2 class="display-5 fw-bold">
+
+مراحل استخدام
+
+</h2>
+
+
+
+<p class="text-muted">
+
+از ارسال رزومه تا شروع همکاری.
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="row g-4">
+
+
+
+
+
+<div class="col-lg-3 col-md-6">
+
+
+<div class="card border-0 shadow text-center h-100 p-4">
+
+
+<div class="display-4 text-danger fw-bold">
+
+01
+
+</div>
+
+
+<h4>
+
+ارسال رزومه
+
+</h4>
+
+
+<p class="text-muted">
+
+اطلاعات و مهارت‌های خود را ارسال کنید.
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="col-lg-3 col-md-6">
+
+
+<div class="card border-0 shadow text-center h-100 p-4">
+
+
+<div class="display-4 text-danger fw-bold">
+
+02
+
+</div>
+
+
+<h4>
+
+بررسی درخواست
+
+</h4>
+
+
+<p class="text-muted">
+
+تیم Nexora درخواست شما را بررسی می‌کند.
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="col-lg-3 col-md-6">
+
+
+<div class="card border-0 shadow text-center h-100 p-4">
+
+
+<div class="display-4 text-danger fw-bold">
+
+03
+
+</div>
+
+
+<h4>
+
+مصاحبه
+
+</h4>
+
+
+<p class="text-muted">
+
+گفتگو درباره مهارت‌ها و تجربه‌ها.
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="col-lg-3 col-md-6">
+
+
+<div class="card border-0 shadow text-center h-100 p-4">
+
+
+<div class="display-4 text-danger fw-bold">
+
+04
+
+</div>
+
+
+<h4>
+
+شروع همکاری
+
+</h4>
+
+
+<p class="text-muted">
+
+ورود به تیم و شروع پروژه‌ها.
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- Application Form -->
+<!-- ========================= -->
+
+
+<section id="apply"
+class="py-5 bg-light">
+
+
+<div class="container">
+
+
+<div class="text-center mb-5">
+
+
+<span class="badge bg-danger mb-3">
+
+Join Us
+
+</span>
+
+
+
+<h2 class="display-5 fw-bold">
+
+ارسال درخواست همکاری
+
+</h2>
+
+
+
+<p class="text-muted">
+
+رزومه خود را ارسال کنید، تیم ما بررسی خواهد کرد.
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="row justify-content-center">
+
+
+<div class="col-xl-8 col-lg-10">
+
+
+<div class="card border-0 shadow-lg">
+
+
+<div class="card-body p-4 p-md-5">
+
+
+<form method="post"
+enctype="multipart/form-data">
+
+
+{% csrf_token %}
+
+
+
+<div class="row g-4">
+
+
+{% for field in form %}
+
+
+<div class="col-12">
+
+
+<label class="form-label fw-bold">
+
+{{ field.label }}
+
+</label>
+
+
+{{ field }}
+
+
+
+{% if field.errors %}
+
+
+<div class="text-danger small">
+
+{{ field.errors }}
+
+</div>
+
+
+{% endif %}
+
+
+</div>
+
+
+{% endfor %}
+
+
+
+</div>
+
+
+
+
+
+<button
+type="submit"
+class="btn btn-danger btn-lg w-100 mt-4 py-3">
+
+
+ارسال درخواست همکاری
+
+
+</button>
+
+
+
+</form>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+<!-- ========================= -->
+<!-- FAQ Careers -->
+<!-- ========================= -->
+
+
+<section class="py-5">
+
+
+<div class="container">
+
+
+<div class="text-center mb-5">
+
+
+<span class="badge bg-danger mb-3">
+
+FAQ
+
+</span>
+
+
+
+<h2 class="display-5 fw-bold">
+
+سؤالات متداول همکاری
+
+</h2>
+
+
+</div>
+
+
+
+
+
+<div class="accordion"
+id="careerFAQ">
+
+
+
+
+
+<div class="accordion-item">
+
+
+<h2 class="accordion-header">
+
+
+<button
+class="accordion-button"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#career1">
+
+
+آیا امکان همکاری دورکاری وجود دارد؟
+
+
+</button>
+
+
+</h2>
+
+
+
+<div id="career1"
+class="accordion-collapse collapse show"
+data-bs-parent="#careerFAQ">
+
+
+<div class="accordion-body">
+
+
+بله، بسته به نوع موقعیت شغلی امکان همکاری آنلاین و دورکاری وجود دارد.
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="accordion-item">
+
+
+<h2 class="accordion-header">
+
+
+<button
+class="accordion-button collapsed"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#career2">
+
+
+آیا افراد تازه‌کار هم می‌توانند درخواست دهند؟
+
+
+</button>
+
+
+</h2>
+
+
+
+<div id="career2"
+class="accordion-collapse collapse"
+data-bs-parent="#careerFAQ">
+
+
+<div class="accordion-body">
+
+
+بله، اگر انگیزه یادگیری و نمونه کار مناسب داشته باشید، درخواست شما بررسی می‌شود.
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="accordion-item">
+
+
+<h2 class="accordion-header">
+
+
+<button
+class="accordion-button collapsed"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#career3">
+
+
+بعد از ارسال رزومه چه اتفاقی می‌افتد؟
+
+
+</button>
+
+
+</h2>
+
+
+
+<div id="career3"
+class="accordion-collapse collapse"
+data-bs-parent="#careerFAQ">
+
+
+<div class="accordion-body">
+
+
+پس از بررسی اولیه، در صورت مناسب بودن شرایط با شما برای مرحله بعدی تماس گرفته می‌شود.
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- Final CTA -->
+<!-- ========================= -->
+
+
+<section class="py-5 bg-dark text-white">
+
+
+<div class="container">
+
+
+<div class="row align-items-center">
+
+
+
+<div class="col-lg-8">
+
+
+<span class="badge bg-danger mb-3">
+
+Join Nexora
+
+</span>
+
+
+
+<h2 class="display-4 fw-bold">
+
+آینده دیجیتال را با ما بسازید
+
+</h2>
+
+
+
+<p class="lead text-light mt-4">
+
+اگر به تکنولوژی، طراحی و ساخت محصولات حرفه‌ای علاقه دارید،
+جای شما در تیم Nexora خالی است.
+
+</p>
+
+
+
+
+<a href="#apply"
+class="btn btn-danger btn-lg px-5 mt-3">
+
+
+شروع همکاری
+
+
+</a>
+
+
+</div>
+
+
+
+
+
+
+<div class="col-lg-4 text-center mt-4 mt-lg-0">
+
+
+<img
+
+src="{% static 'img/logo-web.png' %}"
+
+class="img-fluid"
+
+style="max-width:260px;"
+
+alt="Nexora">
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- Back To Top -->
+<!-- ========================= -->
+
+
+<button
+
+id="backToTop"
+
+class="btn btn-danger shadow-lg"
+
+style="
+position:fixed;
+bottom:25px;
+left:25px;
+display:none;
+z-index:999;
+">
+
+
+↑
+
+
+</button>
+
+
+
+
+
+
+
+
+
+
+<!-- ========================= -->
+<!-- Scripts -->
+<!-- ========================= -->
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+
+
+
+<script>
+
+
+AOS.init({
+
+duration:900,
+
+once:true,
+
+offset:80
+
+});
+
+
+</script>
+
+
+
+
+
+<script>
+
+
+const backToTop=document.getElementById("backToTop");
+
+
+window.addEventListener("scroll",()=>{
+
+
+if(window.scrollY>350){
+
+backToTop.style.display="block";
+
+}
+
+else{
+
+backToTop.style.display="none";
+
+}
+
+
+});
+
+
+
+
+backToTop.addEventListener("click",()=>{
+
+
+window.scrollTo({
+
+top:0,
+
+behavior:"smooth"
+
+});
+
+
+});
+
+
+
+</script>
+
+
+
+
+
+
+<script>
+
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor=>{
+
+
+anchor.addEventListener("click",function(e){
+
+
+const target=document.querySelector(this.getAttribute("href"));
+
+
+if(target){
+
+
+e.preventDefault();
+
+
+target.scrollIntoView({
+
+behavior:"smooth",
+
+block:"start"
+
+});
+
+
+}
+
+
+});
+
+
+});
+
+
+</script>
+
+
+
+
 
 {% endblock %}
