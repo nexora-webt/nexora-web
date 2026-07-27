@@ -26,8 +26,8 @@ ENVIRONMENT = os.environ.get(
 
 DEBUG = os.environ.get(
     "DJANGO_DEBUG",
-    "True",
-).lower() == "true"
+    "False",
+).lower() == "False"
 
 # ==========================================================
 # SECRET KEY
