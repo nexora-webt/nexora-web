@@ -198,9 +198,7 @@ THIRD_PARTY_APPS = [
     "csp",
     "axes",
     "django_ratelimit",
-    # Future Security
-    # "axes",
-    # "csp",
+    # Future Security,
     # "django_otp",
     # "two_factor",
 
