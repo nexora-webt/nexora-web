@@ -626,6 +626,15 @@ class Portfolio(SlugModel):
         verbose_name="دسته‌بندی",
     )
 
+    service = models.ForeignKey(
+        "Service",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="portfolios",
+        verbose_name="سرویس مرتبط",
+    )
+
     short_description = models.CharField(
         max_length=300,
         verbose_name="توضیح کوتاه",
