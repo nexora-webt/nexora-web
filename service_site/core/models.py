@@ -635,6 +635,54 @@ class Portfolio(SlugModel):
         verbose_name="سرویس مرتبط",
     )
 
+    live_demo_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="لینک نسخه آنلاین",
+    )
+
+    github_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="لینک GitHub",
+    )
+
+    completion_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="تاریخ اتمام پروژه",
+    )
+
+    project_duration = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="مدت انجام پروژه",
+    )
+
+    client_company = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="شرکت مشتری",
+    )
+
+    PROJECT_STATUS = (
+        ("completed", "تکمیل شده"),
+        ("development", "درحال توسعه"),
+        ("archived", "آرشیو"),
+    )
+
+    project_status = models.CharField(
+        max_length=20,
+        choices=PROJECT_STATUS,
+        default="completed",
+        verbose_name="وضعیت پروژه",
+    )
+
+    is_public = models.BooleanField(
+        default=True,
+        verbose_name="نمایش در سایت",
+    )
+
     short_description = models.CharField(
         max_length=300,
         verbose_name="توضیح کوتاه",
