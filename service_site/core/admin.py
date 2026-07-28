@@ -581,26 +581,15 @@ class PortfolioAdmin(admin.ModelAdmin):
     fieldsets = (
 
         (
-
             "اطلاعات پروژه",
-
             {
-
                 "fields": (
-
                     "title",
                     "slug",
                     "service",
                     "category",
                     "description",
-                    "service",
-                    "live_demo_url",
-                    "github_url",
-                    "completion_date",
-                    "project_duration",
-                    "client_company",
-                    "project_status",
-                    "is_public",
+                    "technologies",
                 )
             },
         ),
@@ -610,11 +599,25 @@ class PortfolioAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "client_name",
-                    "technologies",
                     "client_company",
                 )
             },
         ),
+
+
+        (
+            "اطلاعات آنلاین پروژه",
+            {
+                "fields": (
+                    "live_demo_url",
+                    "github_url",
+                    "completion_date",
+                    "project_duration",
+                    "project_status",
+                )
+            },
+        ),
+
 
         (
             "تصویر اصلی",
@@ -626,21 +629,9 @@ class PortfolioAdmin(admin.ModelAdmin):
             },
         ),
 
-        (
-            "اطلاعات پروژه",
-            {
-                "fields": (
-                    "live_demo_url",
-                    "github_url",
-                    "completion_date",
-                    "project_duration",
-                    "project_status",
-                )
-            },
-        ),
 
         (
-            "تنظیمات",
+            "تنظیمات نمایش",
             {
                 "fields": (
                     "is_featured",
@@ -649,6 +640,7 @@ class PortfolioAdmin(admin.ModelAdmin):
                 )
             },
         ),
+
 
         (
             "آمار",
@@ -663,6 +655,7 @@ class PortfolioAdmin(admin.ModelAdmin):
                 )
             },
         ),
+
     )
 
     @admin.display(
