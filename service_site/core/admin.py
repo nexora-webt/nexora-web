@@ -410,22 +410,16 @@ class ServiceAdmin(admin.ModelAdmin):
                     "created_at",
 
                     "updated_at",
-
                 ),
-
             },
-
         ),
-
     )
-
 
     @admin.display(
 
         description="نمونه‌کارها",
 
         ordering="total_portfolios",
-
     )
 
     def portfolio_count(self, obj):
@@ -487,60 +481,39 @@ class PortfolioImageInline(admin.TabularInline):
 # PORTFOLIO ADMIN
 # ==========================================================
 
-
 @admin.register(Portfolio)
 class PortfolioAdmin(admin.ModelAdmin):
 
-
     list_display = (
-
         "preview",
-
         "title",
-
         "category",
-
         "client_name",
-
         "is_featured",
-
         "views",
-
         "created_at",
-
+        "service",
     )
-
 
     list_display_links = (
 
         "preview",
-
         "title",
-
     )
-
 
     list_editable = (
 
         "is_featured",
-
     )
-
 
     search_fields = (
-
         "title",
-
         "description",
-
         "client_name",
-
         "technologies",
-
+        "service",
         "slug",
-
     )
-
 
     list_filter = (
 
@@ -551,16 +524,13 @@ class PortfolioAdmin(admin.ModelAdmin):
         "is_active",
 
         "created_at",
-
     )
-
 
     autocomplete_fields = (
 
         "category",
-
+        "service",
     )
-
 
     readonly_fields = (
 
@@ -617,45 +587,29 @@ class PortfolioAdmin(admin.ModelAdmin):
                 "fields": (
 
                     "title",
-
                     "slug",
-
+                    "service",
                     "category",
-
                     "description",
-
                 )
-
             },
-
         ),
 
-
         (
-
             "اطلاعات مشتری",
-
             {
-
                 "fields": (
 
                     "client_name",
 
                     "technologies",
-
                 )
-
             },
-
         ),
 
-
         (
-
             "تصویر اصلی",
-
             {
-
                 "fields": (
 
                     "cover_image",
@@ -735,7 +689,8 @@ class PortfolioAdmin(admin.ModelAdmin):
         return super().get_queryset(
             request
         ).select_related(
-            "category"
+            "category",
+            "service",
         )
 
 # ==========================================================
