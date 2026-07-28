@@ -314,23 +314,18 @@ class="col-12 col-md-6 col-lg-4"
 data-aos="fade-up">
 
 <div class="card portfolio-card h-100 bg-black border-secondary shadow-lg">
-
-{% if project.image %}
-
+{% if project.cover_image %}
 <img
-src="{{ project.image.url }}"
+src="{{ project.cover_image.url }}"
 class="card-img-top"
 style="height:260px;object-fit:cover;"
 alt="{{ project.title }}">
-
 {% else %}
-
 <img
 src="{% static 'img/default-project.jpg' %}"
 class="card-img-top"
 style="height:260px;object-fit:cover;"
-alt="Project">
-
+alt="{{ project.title }}">
 {% endif %}
 
 <div class="card-body">
