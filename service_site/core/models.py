@@ -647,12 +647,6 @@ class Portfolio(SlugModel):
         verbose_name="لینک GitHub",
     )
 
-    completion_date = models.DateField(
-        blank=True,
-        null=True,
-        verbose_name="تاریخ اتمام پروژه",
-    )
-
     project_duration = models.CharField(
         max_length=100,
         blank=True,
@@ -702,12 +696,6 @@ class Portfolio(SlugModel):
         verbose_name="نام مشتری",
     )
 
-    client_company = models.CharField(
-        max_length=200,
-        blank=True,
-        verbose_name="شرکت مشتری",
-    )
-
     website_url = models.URLField(
         blank=True,
         verbose_name="آدرس سایت",
@@ -742,19 +730,11 @@ class Portfolio(SlugModel):
         verbose_name="لینک پروژه",
     )
 
-
-    github_url = models.URLField(
-        blank=True,
-        verbose_name="گیت‌هاب پروژه",
-    )
-
-
     is_featured = models.BooleanField(
         default=False,
         db_index=True,
         verbose_name="نمونه‌کار ویژه",
     )
-
 
     is_published = models.BooleanField(
         default=True,
