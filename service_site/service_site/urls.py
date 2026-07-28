@@ -37,6 +37,8 @@ urlpatterns = i18n_patterns(
             "",
             include("core.urls"),
         ),
+
+    prefix_default_language=True
 )
 
 # Media & Static (Development Only)
