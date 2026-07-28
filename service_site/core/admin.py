@@ -611,7 +611,7 @@ class PortfolioAdmin(admin.ModelAdmin):
                 "fields": (
                     "live_demo_url",
                     "github_url",
-                    "completion_date",
+                    "completed_date",
                     "project_duration",
                     "project_status",
                 )
