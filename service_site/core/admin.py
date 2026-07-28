@@ -493,6 +493,8 @@ class PortfolioAdmin(admin.ModelAdmin):
         "views",
         "created_at",
         "service",
+        "project_status",
+        "is_public",
     )
 
     list_display_links = (
@@ -599,10 +601,9 @@ class PortfolioAdmin(admin.ModelAdmin):
             "اطلاعات مشتری",
             {
                 "fields": (
-
                     "client_name",
-
                     "technologies",
+                    "client_company",
                 )
             },
         ),
@@ -611,66 +612,50 @@ class PortfolioAdmin(admin.ModelAdmin):
             "تصویر اصلی",
             {
                 "fields": (
-
                     "cover_image",
-
                     "preview",
-
                 )
-
             },
-
         ),
 
+        (
+            "اطلاعات پروژه",
+            {
+                "fields": (
+                    "live_demo_url",
+                    "github_url",
+                    "completion_date",
+                    "project_duration",
+                    "project_status",
+                )
+            },
+        ),
 
         (
-
             "تنظیمات",
-
             {
-
                 "fields": (
-
                     "is_featured",
-
                     "is_active",
-
+                    "is_public",
                 )
-
             },
-
         ),
-
 
         (
-
             "آمار",
-
             {
-
                 "classes": (
-
                     "collapse",
-
                 ),
-
                 "fields": (
-
                     "views",
-
                     "created_at",
-
                     "updated_at",
-
                 )
-
             },
-
         ),
-
     )
-
-
 
     @admin.display(
         description="تصویر"
