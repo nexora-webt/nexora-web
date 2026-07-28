@@ -779,7 +779,6 @@ class PortfolioImage(UUIDModel):
         verbose_name="نمونه‌کار",
     )
 
-
     image = models.ImageField(
         upload_to=upload_portfolio_gallery,
         validators=[
@@ -788,19 +787,22 @@ class PortfolioImage(UUIDModel):
         verbose_name="تصویر",
     )
 
-
     title = models.CharField(
         max_length=200,
         blank=True,
         verbose_name="عنوان تصویر",
     )
 
+    alt_text = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="متن جایگزین تصویر",
+    )
 
     description = models.TextField(
         blank=True,
         verbose_name="توضیحات تصویر",
     )
-
 
     order = models.PositiveIntegerField(
         default=0,
@@ -814,19 +816,13 @@ class PortfolioImage(UUIDModel):
         verbose_name="تصویر اصلی گالری",
     )
 
-
     class Meta:
-
         verbose_name = "تصویر نمونه‌کار"
-
         verbose_name_plural = "تصاویر نمونه‌کار"
-
         ordering = [
             "order",
             "-created_at",
         ]
-
-
         indexes = [
 
             models.Index(
@@ -835,16 +831,11 @@ class PortfolioImage(UUIDModel):
                     "order",
                 ]
             ),
-
         ]
 
-
     def __str__(self):
-
         if self.title:
-
             return self.title
-
         return self.portfolio.title
 
 # ==========================================================
