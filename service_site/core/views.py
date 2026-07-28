@@ -819,12 +819,6 @@ def error_500(request):
     )
 
 def careers(request):
-    return render(
-        request,
-        "careers.html"
-    )
-
-def careers(request):
 
     form = JobApplicationForm()
 
@@ -837,7 +831,7 @@ def careers(request):
 
         if form.is_valid():
 
-            application = form.save()
+            form.save()
 
             messages.success(
                 request,
@@ -851,7 +845,7 @@ def careers(request):
         request,
         "careers.html",
         {
-            "form": form
+            "form": form,
         }
     )
 
