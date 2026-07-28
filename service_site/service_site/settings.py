@@ -26,8 +26,8 @@ ENVIRONMENT = os.environ.get(
 
 DEBUG = os.environ.get(
     "DJANGO_DEBUG",
-    "False",
-).lower() == "False"
+    "Fuls",
+).lower() == "true"
 
 # ==========================================================
 # SECRET KEY
@@ -198,7 +198,9 @@ THIRD_PARTY_APPS = [
     "csp",
     "axes",
     "django_ratelimit",
-    # Future Security,
+    # Future Security
+    # "axes",
+    # "csp",
     # "django_otp",
     # "two_factor",
 
