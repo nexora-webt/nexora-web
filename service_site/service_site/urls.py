@@ -1,47 +1,43 @@
-"""
-URL configuration for service_site project.
-"""
-from django.contrib.admin.views.decorators import staff_member_required
-from django.urls import path
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
-from django.urls import register_converter
-from core.converters import UnicodeSlugConverter
 
-register_converter(UnicodeSlugConverter, "uslug")
 
-urlpatterns = i18n_patterns(
+urlpatterns = [
 
-    # Django Language
     path(
         "i18n/",
         include("django.conf.urls.i18n"),
     ),
 
-    # Django Admin
+]
+
+
+urlpatterns += i18n_patterns(
+
     path(
         "control-panel-x9K2aP7/",
         admin.site.urls,
     ),
 
-    # Accounts
     path(
         "accounts/",
         include("accounts.urls"),
     ),
 
     path(
-            "",
-            include("core.urls"),
-        ),
+        "",
+        include("core.urls"),
+    ),
 
-    prefix_default_language=True
+    prefix_default_language=True,
+
 )
 
-# Media & Static (Development Only)
+
+
 if settings.DEBUG:
 
     urlpatterns += static(
