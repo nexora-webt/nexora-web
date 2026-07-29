@@ -1,0 +1,1900 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+پروفایل | Nexora Web
+{% endblock %}
+{% block content %}
+<section class="py-5 bg-black">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card bg-dark border-secondary shadow-lg">
+                    <div class="card-header bg-danger text-white">
+                        <h3 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                            پروفایل کاربری
+                        </h3>
+                    </div>
+                    <div class="card-body text-white">
+                        <div class="text-center mb-4">
+                            {% if profile.avatar %}
+                            <img src="{{ profile.avatar.url }}"
+                                class="rounded-circle shadow-lg"
+                                width="150"
+                                height="150"
+                                style="object-fit:cover;">
+                            {% else %}
+                            <img src="{% static 'img/team-placeholder.png' %}"
+                                class="rounded-circle shadow-lg"
+                                width="150"
+                                height="150"
+                                style="object-fit:cover;">
+                            {% endif %}
+                            <h4 class="mt-3">
+                            {{ request.user.get_full_name|default:request.user.username }}
+                            </h4>
+                            <p class="text-secondary">
+                            {{ request.user.email }}
+                            </p>
+                        </div>
+                        <hr class="border-secondary">
+                        <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                            <button type="submit"
+                                class="btn btn-danger w-100 mt-3">
+                            <i class="fas fa-save me-2"></i>
+                                 ذخیره تغییرات
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+<!-- Profile Header -->
+<section class="py-5 bg-dark">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card bg-black border-secondary shadow-lg overflow-hidden">
+                    <div class="card-body p-5">
+                        <div class="row align-items-center">
+                                <div class="col-md-4 text-center mb-4 mb-md-0">
+                                    <div class="position-relative d-inline-block">
+                                        {% if profile.avatar %}
+                                        <img
+                                            src="{{ profile.avatar.url }}"
+                                            class="rounded-circle shadow-lg"
+                                            width="180"
+                                            height="180"
+                                            style="object-fit:cover;"
+                                            alt="Profile Avatar">
+                                        {% else %}
+                                        <img
+                                            src="{% static 'img/team-placeholder.png' %}"
+                                            class="rounded-circle shadow-lg"
+                                            width="180"
+                                            height="180"
+                                            style="object-fit:cover;"
+                                            alt="Default Avatar">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <span class="badge bg-danger px-3 py-2 mb-3">
+                                        Nexora Member
+                                    </span>
+                                    <h1 class="text-white fw-bold mb-3">
+                                        {{ request.user.get_full_name|default:request.user.username }}
+                                    </h1>
+                                    <p class="text-secondary fs-5 mb-4">
+                                        {% if profile.bio %}
+                                        {{ profile.bio }}
+                                        {% else %}
+                                         به جمع کاربران Nexora Web خوش آمدید.
+                                        {% endif %}
+                                    </p>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-body">
+                                                    <small class="text-secondary">
+                                                         نام کاربری
+                                                    </small>
+                                                    <h6 class="text-white mb-0">
+                                                        {{ request.user.username }}
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-body">
+                                                    <small class="text-secondary">
+                                                         ایمیل
+                                                    </small>
+                                                    <h6 class="text-white mb-0">
+                                                        {{ request.user.email }}
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-body">
+                                                    <small class="text-secondary">
+                                                         تاریخ عضویت
+                                                    </small>
+                                                    <h6 class="text-white mb-0">
+                                                        {{ request.user.date_joined|date:"Y/m/d" }}
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-body">
+                                                    <small class="text-secondary">
+                                                         وضعیت حساب
+                                                    </small>
+                                                    <h6 class="text-success mb-0">
+                                                         فعال
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- User Information Section -->
+
+
+<section class="py-5 bg-black">
+
+
+<div class="container">
+
+
+<div class="row g-4">
+
+
+
+<div class="col-lg-6">
+
+
+
+<div class="card bg-dark border-secondary shadow-lg h-100">
+
+
+<div class="card-header bg-danger text-white">
+
+<h4 class="mb-0">
+
+اطلاعات شخصی
+
+</h4>
+
+</div>
+
+
+
+<div class="card-body">
+
+
+
+<div class="mb-4">
+
+
+<label class="text-secondary small">
+
+نام
+
+</label>
+
+
+<h6 class="text-white">
+
+{% if profile.first_name %}
+
+{{ profile.first_name }}
+
+{% else %}
+
+ثبت نشده
+
+{% endif %}
+
+</h6>
+
+
+</div>
+
+
+
+
+<div class="mb-4">
+
+
+<label class="text-secondary small">
+
+نام خانوادگی
+
+</label>
+
+
+<h6 class="text-white">
+
+{% if profile.last_name %}
+
+{{ profile.last_name }}
+
+{% else %}
+
+ثبت نشده
+
+{% endif %}
+
+</h6>
+
+
+</div>
+
+
+
+
+<div class="mb-4">
+
+
+<label class="text-secondary small">
+
+شماره تماس
+
+</label>
+
+
+<h6 class="text-white">
+
+
+{% if profile.phone %}
+
+{{ profile.phone }}
+
+{% else %}
+
+ثبت نشده
+
+{% endif %}
+
+
+</h6>
+
+
+</div>
+
+
+
+
+<div class="mb-0">
+
+
+<label class="text-secondary small">
+
+موقعیت
+
+</label>
+
+
+<h6 class="text-white">
+
+
+{% if profile.location %}
+
+{{ profile.location }}
+
+{% else %}
+
+ثبت نشده
+
+{% endif %}
+
+
+</h6>
+
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="col-lg-6">
+
+
+
+<div class="card bg-dark border-secondary shadow-lg h-100">
+
+
+<div class="card-header bg-dark border-secondary">
+
+
+<h4 class="text-white mb-0">
+
+درباره شما
+
+</h4>
+
+
+</div>
+
+
+
+
+<div class="card-body">
+
+
+
+{% if profile.about %}
+
+
+<p class="text-light lh-lg">
+
+{{ profile.about|linebreaks }}
+
+</p>
+
+
+{% else %}
+
+
+<p class="text-secondary">
+
+هنوز توضیحی برای پروفایل ثبت نشده است.
+
+</p>
+
+
+{% endif %}
+
+
+
+
+
+<hr class="border-secondary">
+
+
+
+
+
+<div class="d-flex flex-wrap gap-2">
+
+
+
+<span class="badge bg-danger px-3 py-2">
+
+<i class="fas fa-user me-2"></i>
+
+کاربر Nexora
+
+</span>
+
+
+
+{% if request.user.is_staff %}
+
+
+<span class="badge bg-warning text-dark px-3 py-2">
+
+<i class="fas fa-shield-alt me-2"></i>
+
+مدیر
+
+</span>
+
+
+{% endif %}
+
+
+
+{% if request.user.is_superuser %}
+
+
+<span class="badge bg-success px-3 py-2">
+
+<i class="fas fa-crown me-2"></i>
+
+دسترسی کامل
+
+</span>
+
+
+{% endif %}
+
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+<!-- Profile Edit Section -->
+
+
+<section class="py-5 bg-dark">
+
+
+<div class="container">
+
+
+<div class="row justify-content-center">
+
+
+<div class="col-lg-10">
+
+
+
+<div class="card bg-black border-secondary shadow-lg">
+
+
+
+<div class="card-header bg-danger text-white">
+
+
+<h4 class="mb-0">
+
+ویرایش اطلاعات پروفایل
+
+</h4>
+
+
+</div>
+
+
+
+<div class="card-body p-4">
+
+
+
+<form method="post" enctype="multipart/form-data">
+
+
+{% csrf_token %}
+
+
+
+<div class="row g-4">
+
+
+
+<div class="col-md-6">
+
+
+<div class="form-group">
+
+
+<label class="text-white mb-2">
+
+نام
+
+</label>
+
+
+{{ form.first_name }}
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="col-md-6">
+
+
+<div class="form-group">
+
+
+<label class="text-white mb-2">
+
+نام خانوادگی
+
+</label>
+
+
+{{ form.last_name }}
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="col-md-6">
+
+
+<div class="form-group">
+
+
+<label class="text-white mb-2">
+
+شماره تماس
+
+</label>
+
+
+{{ form.phone }}
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="col-md-6">
+
+
+<div class="form-group">
+
+
+<label class="text-white mb-2">
+
+موقعیت
+
+</label>
+
+
+{{ form.location }}
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="col-12">
+
+
+<div class="form-group">
+
+
+<label class="text-white mb-2">
+
+تصویر پروفایل
+
+</label>
+
+
+{{ form.avatar }}
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="col-12">
+
+
+<div class="form-group">
+
+
+<label class="text-white mb-2">
+
+درباره شما
+
+</label>
+
+
+{{ form.about }}
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+
+
+<button
+type="submit"
+class="btn btn-danger btn-lg w-100 mt-4">
+
+
+<i class="fas fa-save me-2"></i>
+
+
+ذخیره تغییرات
+
+
+
+</button>
+
+
+
+
+</form>
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</section>
+<!-- Account Security Section -->
+
+
+<section class="py-5 bg-black">
+
+
+<div class="container">
+
+
+<div class="row g-4">
+
+
+
+<div class="col-lg-6">
+
+
+
+<div class="card bg-dark border-secondary shadow-lg h-100">
+
+
+
+<div class="card-header bg-danger text-white">
+
+
+<h4 class="mb-0">
+
+امنیت حساب
+
+</h4>
+
+
+</div>
+
+
+
+
+<div class="card-body">
+
+
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+
+<div>
+
+<small class="text-secondary">
+
+آخرین ورود
+
+</small>
+
+
+<h6 class="text-white mb-0">
+
+{% if request.user.last_login %}
+
+{{ request.user.last_login|date:"Y/m/d H:i" }}
+
+{% else %}
+
+ثبت نشده
+
+{% endif %}
+
+</h6>
+
+
+</div>
+
+
+
+<i class="fas fa-clock text-danger fa-2x"></i>
+
+
+
+</div>
+
+
+
+
+
+<hr class="border-secondary">
+
+
+
+
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+
+<div>
+
+<small class="text-secondary">
+
+وضعیت ایمیل
+
+</small>
+
+
+<h6 class="text-white mb-0">
+
+{% if request.user.email %}
+
+تایید شده
+
+{% else %}
+
+ثبت نشده
+
+{% endif %}
+
+</h6>
+
+
+</div>
+
+
+
+<i class="fas fa-envelope text-danger fa-2x"></i>
+
+
+
+</div>
+
+
+
+
+
+<hr class="border-secondary">
+
+
+
+
+
+<div class="d-flex justify-content-between align-items-center">
+
+
+<div>
+
+<small class="text-secondary">
+
+نوع حساب
+
+</small>
+
+
+<h6 class="text-white mb-0">
+
+{% if request.user.is_staff %}
+
+مدیر سیستم
+
+{% else %}
+
+کاربر عادی
+
+{% endif %}
+
+</h6>
+
+
+</div>
+
+
+
+<i class="fas fa-user-shield text-danger fa-2x"></i>
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<div class="col-lg-6">
+
+
+
+<div class="card bg-dark border-secondary shadow-lg h-100">
+
+
+
+<div class="card-header border-secondary">
+
+
+<h4 class="text-white mb-0">
+
+عملیات حساب
+
+</h4>
+
+
+</div>
+
+
+
+
+<div class="card-body d-flex flex-column gap-3">
+
+
+
+<a href="{% url 'accounts:change_password' %}"
+
+class="btn btn-outline-danger btn-lg">
+
+
+<i class="fas fa-key me-2"></i>
+
+
+تغییر رمز عبور
+
+
+</a>
+
+
+
+
+
+<a href="{% url 'accounts:dashboard' %}"
+
+class="btn btn-outline-light btn-lg">
+
+
+<i class="fas fa-chart-line me-2"></i>
+
+
+داشبورد کاربری
+
+
+</a>
+
+
+
+
+
+<a href="{% url 'accounts:logout' %}"
+
+class="btn btn-danger btn-lg">
+
+
+<i class="fas fa-sign-out-alt me-2"></i>
+
+
+خروج از حساب
+
+
+</a>
+
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+<!-- User Activity Section -->
+
+
+<section class="py-5 bg-dark">
+
+
+<div class="container">
+
+
+<div class="row justify-content-center">
+
+
+<div class="col-lg-10">
+
+
+
+<div class="card bg-black border-secondary shadow-lg">
+
+
+
+<div class="card-header bg-danger text-white">
+
+
+<h4 class="mb-0">
+
+فعالیت‌های اخیر
+
+</h4>
+
+
+</div>
+
+
+
+
+<div class="card-body">
+
+
+
+{% if activities %}
+
+
+
+<div class="timeline">
+
+
+
+{% for activity in activities %}
+
+
+
+<div class="d-flex mb-4">
+
+
+
+<div class="me-3">
+
+
+<div class="rounded-circle bg-danger d-flex align-items-center justify-content-center"
+
+style="width:45px;height:45px;">
+
+
+<i class="fas fa-history text-white"></i>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="flex-grow-1">
+
+
+
+<div class="card bg-dark border-secondary">
+
+
+<div class="card-body py-3">
+
+
+
+<h6 class="text-white mb-1">
+
+{{ activity.title }}
+
+</h6>
+
+
+
+
+<p class="text-secondary mb-2">
+
+{{ activity.description }}
+
+</p>
+
+
+
+
+<small class="text-muted">
+
+{{ activity.created_at|date:"Y/m/d H:i" }}
+
+</small>
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+{% endfor %}
+
+
+
+</div>
+
+
+
+{% else %}
+
+
+
+<div class="text-center py-5">
+
+
+
+<i class="fas fa-history fa-3x text-secondary mb-3"></i>
+
+
+
+<h5 class="text-white">
+
+فعالیتی ثبت نشده است.
+
+</h5>
+
+
+
+<p class="text-secondary mb-0">
+
+فعالیت‌های شما در این بخش نمایش داده خواهد شد.
+
+</p>
+
+
+
+</div>
+
+
+
+{% endif %}
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</section>
+<!-- User Projects & Orders Section -->
+
+
+<section class="py-5 bg-black">
+
+
+<div class="container">
+
+
+<div class="row g-4">
+
+
+
+<div class="col-lg-6">
+
+
+
+<div class="card bg-dark border-secondary shadow-lg h-100">
+
+
+
+<div class="card-header bg-danger text-white">
+
+
+<h4 class="mb-0">
+
+پروژه‌های شما
+
+</h4>
+
+
+</div>
+
+
+
+
+<div class="card-body">
+
+
+
+{% if user_projects %}
+
+
+
+<div class="list-group list-group-flush">
+
+
+
+{% for project in user_projects %}
+
+
+
+<div class="list-group-item bg-dark border-secondary">
+
+
+
+<div class="d-flex justify-content-between align-items-center">
+
+
+
+<div>
+
+
+<h6 class="text-white mb-1">
+
+{{ project.title }}
+
+</h6>
+
+
+<small class="text-secondary">
+
+{{ project.created_at|date:"Y/m/d" }}
+
+</small>
+
+
+</div>
+
+
+
+
+
+{% if project.status == "completed" %}
+
+
+<span class="badge bg-success">
+
+تکمیل شده
+
+</span>
+
+
+
+{% elif project.status == "pending" %}
+
+
+<span class="badge bg-warning text-dark">
+
+در انتظار بررسی
+
+</span>
+
+
+
+{% else %}
+
+
+<span class="badge bg-secondary">
+
+{{ project.status }}
+
+</span>
+
+
+
+{% endif %}
+
+
+
+</div>
+
+
+</div>
+
+
+
+{% endfor %}
+
+
+
+</div>
+
+
+
+{% else %}
+
+
+
+<div class="text-center py-4">
+
+
+<i class="fas fa-folder-open fa-3x text-secondary mb-3"></i>
+
+
+<p class="text-secondary mb-0">
+
+هنوز پروژه‌ای ثبت نشده است.
+
+</p>
+
+
+</div>
+
+
+
+{% endif %}
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<div class="col-lg-6">
+
+
+
+<div class="card bg-dark border-secondary shadow-lg h-100">
+
+
+
+<div class="card-header border-secondary">
+
+
+<h4 class="text-white mb-0">
+
+درخواست‌های خدمات
+
+</h4>
+
+
+</div>
+
+
+
+
+<div class="card-body">
+
+
+
+{% if orders %}
+
+
+
+{% for order in orders %}
+
+
+
+<div class="card bg-black border-secondary mb-3">
+
+
+<div class="card-body">
+
+
+
+<div class="d-flex justify-content-between">
+
+
+
+<h6 class="text-white">
+
+{{ order.service.title }}
+
+</h6>
+
+
+
+<span class="badge bg-danger">
+
+#{{ order.id }}
+
+</span>
+
+
+
+</div>
+
+
+
+
+<p class="text-secondary mb-2">
+
+{{ order.created_at|date:"Y/m/d H:i" }}
+
+</p>
+
+
+
+
+{% if order.status == "completed" %}
+
+<span class="badge bg-success">
+
+انجام شده
+
+</span>
+
+
+{% elif order.status == "processing" %}
+
+<span class="badge bg-warning text-dark">
+
+در حال انجام
+
+</span>
+
+
+{% else %}
+
+<span class="badge bg-secondary">
+
+در انتظار
+
+</span>
+
+
+{% endif %}
+
+
+
+</div>
+
+
+</div>
+
+
+
+{% endfor %}
+
+
+
+{% else %}
+
+
+
+<div class="text-center py-4">
+
+
+<i class="fas fa-shopping-cart fa-3x text-secondary mb-3"></i>
+
+
+<p class="text-secondary mb-0">
+
+درخواستی برای خدمات ثبت نشده است.
+
+</p>
+
+
+</div>
+
+
+
+{% endif %}
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+<!-- Security Section -->
+
+<section class="mt-5">
+
+    <div class="card bg-black border-secondary shadow-lg">
+
+        <div class="card-header bg-dark">
+
+            <h4 class="text-white mb-0">
+
+                <i class="fas fa-shield-alt text-danger me-2"></i>
+
+                امنیت حساب
+
+            </h4>
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            <div class="row g-4">
+
+
+                <div class="col-md-6">
+
+
+                    <div class="p-4 rounded bg-dark border border-secondary">
+
+
+                        <small class="text-secondary">
+
+                            نام کاربری
+
+                        </small>
+
+
+                        <h5 class="text-white mt-2">
+
+                            {{ request.user.username }}
+
+                        </h5>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="col-md-6">
+
+
+                    <div class="p-4 rounded bg-dark border border-secondary">
+
+
+                        <small class="text-secondary">
+
+                            ایمیل حساب
+
+                        </small>
+
+
+                        <h5 class="text-white mt-2">
+
+                            {{ request.user.email|default:"ثبت نشده" }}
+
+                        </h5>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="mt-4">
+
+
+                <a href="{% url 'accounts:change_password' %}"
+
+                   class="btn btn-outline-danger">
+
+
+                    <i class="fas fa-key me-2"></i>
+
+                    تغییر رمز عبور
+
+
+                </a>
+
+
+            </div>
+
+
+
+        </div>
+
+    </div>
+
+</section>
+<!-- Account Information -->
+
+<section class="mt-5">
+
+
+    <div class="card bg-dark border-secondary shadow-lg">
+
+
+        <div class="card-header">
+
+
+            <h4 class="text-white mb-0">
+
+                <i class="fas fa-user-circle text-danger me-2"></i>
+
+                اطلاعات حساب
+
+            </h4>
+
+
+        </div>
+
+
+
+        <div class="card-body">
+
+
+            <div class="row g-4">
+
+
+                <div class="col-md-4">
+
+
+                    <div class="text-center p-4 bg-black rounded border border-secondary">
+
+
+                        <i class="fas fa-calendar-alt fa-2x text-danger mb-3"></i>
+
+
+                        <p class="text-secondary mb-1">
+
+                            تاریخ عضویت
+
+                        </p>
+
+
+                        <h6 class="text-white">
+
+                            {{ request.user.date_joined|date:"Y/m/d" }}
+
+                        </h6>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+                <div class="col-md-4">
+
+
+                    <div class="text-center p-4 bg-black rounded border border-secondary">
+
+
+                        <i class="fas fa-user-check fa-2x text-danger mb-3"></i>
+
+
+                        <p class="text-secondary mb-1">
+
+                            وضعیت حساب
+
+                        </p>
+
+
+                        {% if request.user.is_active %}
+
+
+                        <h6 class="text-success">
+
+                            فعال
+
+                        </h6>
+
+
+                        {% else %}
+
+
+                        <h6 class="text-danger">
+
+                            غیرفعال
+
+                        </h6>
+
+
+                        {% endif %}
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+                <div class="col-md-4">
+
+
+                    <div class="text-center p-4 bg-black rounded border border-secondary">
+
+
+                        <i class="fas fa-envelope-open-text fa-2x text-danger mb-3"></i>
+
+
+                        <p class="text-secondary mb-1">
+
+                            تایید ایمیل
+
+                        </p>
+
+
+                        {% if request.user.email %}
+
+
+                        <h6 class="text-success">
+
+                            ثبت شده
+
+                        </h6>
+
+
+                        {% else %}
+
+
+                        <h6 class="text-warning">
+
+                            ثبت نشده
+
+                        </h6>
+
+
+                        {% endif %}
+
+
+                    </div>
+
+
+                </div>
+
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</section>
+<!-- Profile Actions -->
+
+<section class="mt-5 mb-5">
+
+
+    <div class="card bg-black border-secondary shadow-lg">
+
+
+        <div class="card-body text-center py-5">
+
+
+            <h3 class="text-white fw-bold mb-4">
+
+                مدیریت حساب Nexora
+
+            </h3>
+
+
+            <div class="d-flex justify-content-center flex-wrap gap-3">
+
+
+                <a href="{% url 'core:home' %}"
+
+                   class="btn btn-outline-light btn-lg">
+
+
+                    <i class="fas fa-home me-2"></i>
+
+                    صفحه اصلی
+
+
+                </a>
+
+
+
+                {% if request.user.is_staff %}
+
+
+                <a href="/admin/"
+
+                   class="btn btn-danger btn-lg">
+
+
+                    <i class="fas fa-user-shield me-2"></i>
+
+                    مدیریت سایت
+
+
+                </a>
+
+
+                {% endif %}
+
+
+
+                <a href="{% url 'accounts:logout' %}"
+
+                   class="btn btn-outline-danger btn-lg">
+
+
+                    <i class="fas fa-sign-out-alt me-2"></i>
+
+                    خروج از حساب
+
+
+                </a>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</section>
+
+
+
+<style>
+
+
+.profile-card {
+
+    transition: all .3s ease;
+
+}
+
+
+.profile-card:hover {
+
+    transform: translateY(-5px);
+
+}
+
+
+
+.card {
+
+    border-radius: 18px;
+
+}
+
+
+
+.btn {
+
+    border-radius: 12px;
+
+}
+
+
+
+img {
+
+    object-fit: cover;
+
+}
+
+
+
+</style>
+
+
+{% endblock %}
