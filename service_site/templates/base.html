@@ -23,6 +23,11 @@
     <meta http-equiv="X-UA-Compatible"
           content="IE=edge">
 
+    {% block meta_description %}
+    <meta name="description"
+        content="نمونه کار {{ project.title }} از Nexora Web - طراحی و توسعه وب‌سایت حرفه‌ای">
+    {% endblock %}
+    
     <link rel="icon" href="{% static 'img/logo-web2.png' %}">
 
     <link rel="apple-touch-icon" href="{% static 'img/logo-web2.png' %}">
@@ -34,6 +39,8 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
     {% block extra_css %}
+    {% endblock %}
+    {% block extra_meta %}
     {% endblock %}
 
 </head>

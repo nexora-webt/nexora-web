@@ -8,7 +8,7 @@ from django.shortcuts import (
     get_object_or_404,
 )
 from .forms import JobApplicationForm
-
+from django.db.models import F
 from django.contrib import messages
 
 from django.contrib.auth.decorators import login_required
@@ -302,6 +302,7 @@ def service_detail(request, slug):
     related_projects = Portfolio.objects.filter(
         category=service.category,
         is_active=True,
+        is_published=True,
     ).order_by(
         "-created_at"
     )[:6]
@@ -335,29 +336,64 @@ def portfolio_detail(request, slug):
         Portfolio,
         slug=slug,
         is_active=True,
+        is_published=True,
     )
 
+    session_key = f"viewed_portfolio_{project.id}"
+
+    if not request.session.get(session_key):
+
+        Portfolio.objects.filter(
+            id=project.id
+        ).update(
+            views=F("views") + 1
+        )
+
+        request.session[session_key] = True
+
+    Portfolio.objects.filter(
+        id=project.id
+    ).update(
+        views=F("views") + 1
+    )
+
+    project.refresh_from_db()
 
     images = project.images.all().order_by(
         "order"
     )
 
+    if project.service:
+        related_projects = Portfolio.objects.filter(
+            service=project.service,
+            is_active=True,
+            is_published=True,
+        ).exclude(
+            id=project.id,
+        ).order_by("-created_at")[:3]
 
-    related_projects = Portfolio.objects.filter(
-        category=project.category,
-        is_active=True,
-    ).exclude(
-        id=project.id,
-    ).order_by(
-        "-created_at"
-    )[:3]
+    else:
+        related_projects = Portfolio.objects.filter(
+            category=project.category,
+            is_active=True,
+            is_published=True,
+        ).exclude(
+            id=project.id,
+        ).order_by("-created_at")[:3]
 
+    technologies = []
 
+    if project.technologies:
+        technologies = [
+            tech.strip()
+            for tech in project.technologies.split(",")
+            if tech.strip()
+        ]
 
     context = {
 
         "project": project,
-
+        "technologies": technologies,
         "images": images,
 
         "related_projects": related_projects,
