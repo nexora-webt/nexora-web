@@ -384,11 +384,25 @@ def portfolio_detail(request, slug):
     technologies = []
 
     if project.technologies:
-        technologies = [
-            tech.strip()
-            for tech in project.technologies.split(",")
-            if tech.strip()
-        ]
+
+        if isinstance(project.technologies, dict):
+
+            for key, value in project.technologies.items():
+
+                if isinstance(value, list):
+                    technologies.extend(value)
+
+                else:
+                    technologies.append(str(value))
+
+
+        elif isinstance(project.technologies, str):
+
+            technologies = [
+                tech.strip()
+                for tech in project.technologies.split(",")
+                if tech.strip()
+            ]
 
     context = {
 
