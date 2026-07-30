@@ -62,12 +62,6 @@ Nexora Web | طراحی سایت
             <div class="col-lg-6"
                  data-aos="fade-left">
 
-                <span class="badge bg-danger mb-3 px-3 py-2">
-
-                    Digital Agency
-
-                </span>
-
                 <h1 class="display-3 display-md-1 fw-bold text-white mb-4">
                 Nexora Web
                 </h1>
@@ -147,136 +141,69 @@ Nexora Web | طراحی سایت
                 </div>
 
             </div>
-
             <div class="col-lg-6 text-center"
                  data-aos="fade-right">
-
                 <img
-
                     src="{% static 'img/logo-web.png' %}"
-
                     class="img-fluid"
-
                     style="max-width:100%;"
-
                     alt="Nexora"
-
                 >
-
             </div>
-
         </div>
-
     </div>
-
 </section>
-
 <!-- ========================= -->
 <!-- Services -->
 <!-- ========================= -->
-
-<section
-id="services"
-class="py-5">
-
-<div class="container">
-
-<div class="text-center mb-5">
-
-<h2 class="display-5 fw-bold">
-
-خدمات ما
-
-</h2>
-
-<p class="text-muted">
-
-تمام خدمات مورد نیاز کسب‌وکار شما
-در یک مجموعه حرفه‌ای
-
-</p>
-
-</div>
-
-<div class="row g-4">
-
-{% for service in services %}
-
-<div
-class="col-12 col-md-6 col-lg-4"
-data-aos="zoom-in">
-
-<div class="card service-card h-100 border-0 shadow">
-
-<div class="card-body p-4 text-center">
-
-{% if service.icon %}
-
-<i
-class="{{ service.icon }} fa-4x text-danger mb-4">
-
-</i>
-
-{% endif %}
-
-<h4 class="fw-bold mb-3">
-
-{{ service.title }}
-
-</h4>
-
-<p class="text-muted">
-
-{{ service.description }}
-
-</p>
-
-<div class="mt-4">
-
-<span class="badge bg-success fs-6 px-3 py-2">
-
-از
-
-{{ service.base_price|floatformat:0 }}
-
-تومان
-
-</span>
-
-</div>
-
-<div class="mt-4">
-
-<a
-
-href="{% url 'core:service_detail' service.slug %}"
-
-class="btn btn-outline-danger">
-
-مشاهده جزئیات
-
-</a>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-{% endfor %}
-
-</div>
-
-</div>
-
+<section id="services" class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold">
+                 خدمات ما
+            </h2>
+            <p class="text-muted">
+                 تمام خدمات مورد نیاز کسب‌وکار شما
+                 در یک مجموعه حرفه‌ای
+            </p>
+        </div>
+        <div class="row g-4">
+            {% for service in services %}
+            <div class="col-12 col-md-6 col-lg-4" data-aos="zoom-in">
+                <div class="card service-card h-100 border-0 shadow">
+                    <div class="card-body p-4 text-center">
+                        {% if service.icon %}
+                        <i class="{{ service.icon }} fa-4x text-danger mb-4">
+                        </i>
+                        {% endif %}
+                        <h4 class="fw-bold mb-3">
+                            {{ service.title }}
+                        </h4>
+                        <p class="text-muted">
+                            {{ service.description }}
+                        </p>
+                        <div class="mt-4">
+                            <span class="badge bg-success fs-6 px-3 py-2">
+                             از
+                            {{ service.base_price|floatformat:0 }}
+                             تومان
+                            </span>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{% url 'core:service_detail' service.slug %}" class="btn btn-outline-danger">
+                                 مشاهده جزئیات
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </section>
-
 <!-- ========================= -->
 <!-- Portfolio -->
 <!-- ========================= -->
-
 <section
 id="portfolio"
 class="py-5 bg-dark text-white">
@@ -284,12 +211,6 @@ class="py-5 bg-dark text-white">
 <div class="container">
 
 <div class="text-center mb-5">
-
-<span class="badge bg-danger mb-3">
-
-Portfolio
-
-</span>
 
 <h2 class="display-5 fw-bold">
 
@@ -761,13 +682,6 @@ class="py-5">
 <div class="container">
 
 <div class="text-center mb-5">
-
-<span class="badge bg-danger mb-3">
-
-About Us
-
-</span>
-
 <h2 class="display-5 fw-bold">
 
 درباره Nexora Web
@@ -1002,12 +916,6 @@ class="py-5 bg-light">
 
 <div class="text-center mb-5">
 
-<span class="badge bg-danger mb-3">
-
-Contact
-
-</span>
-
 <h2 class="display-5 fw-bold">
 
 تماس با ما
@@ -1049,7 +957,7 @@ value="1">
 
 </label>
 
-{{ contact_form.full_name }}
+{{ contact_form.name }}
 
 </div>
 
@@ -1250,12 +1158,6 @@ data-bs-parent="#faqAccordion">
 <div class="row align-items-center">
 
 <div class="col-lg-8">
-
-<span class="badge bg-danger mb-3">
-
-Start Today
-
-</span>
 
 <h2 class="display-4 fw-bold mb-4">
 
@@ -1494,12 +1396,6 @@ GitHub
 <div class="container">
 
 <div class="text-center mb-5">
-
-<span class="badge bg-danger mb-3">
-
-Workflow
-
-</span>
 
 <h2 class="display-5 fw-bold">
 

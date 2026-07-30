@@ -65,439 +65,226 @@ class LargeTextarea(forms.Textarea):
                 "class": "form-control",
             },
         )
-
         super().__init__(*args, **kwargs)
-
 # ==========================================================
 # CONTACT FORM
 # ==========================================================
-
 class ContactForm(BaseStyledForm):
-
     phone = forms.CharField(
-
         label="شماره تماس",
-
         validators=[phone_validator],
-
         max_length=11,
-
     )
-
     class Meta:
-
         model = ContactMessage
-
         fields = [
-
             "name",
-
             "email",
-
             "phone",
-
             "subject",
-
             "message",
-
         ]
-
         widgets = {
-
             "name": forms.TextInput(
-
                 attrs={
-
                     "placeholder": "نام و نام خانوادگی",
-
                 }
-
             ),
-
             "email": forms.EmailInput(
-
                 attrs={
-
                     "placeholder": "example@email.com",
-
                 }
-
             ),
-
             "phone": forms.TextInput(
-
                 attrs={
-
                     "placeholder": "09123456789",
-
                 }
-
             ),
-
             "subject": forms.TextInput(
-
                 attrs={
-
                     "placeholder": "موضوع پیام",
-
                 }
-
             ),
-
             "message": LargeTextarea(
-
                 attrs={
-
                     "rows": 6,
-
                     "placeholder": "پیام خود را بنویسید...",
-
                 }
-
             ),
-
         }
-
     def clean_name(self):
-
         name = self.cleaned_data["name"].strip()
-
         if len(name) < 3:
-
             raise forms.ValidationError(
-
                 "نام وارد شده معتبر نیست."
-
             )
-
         return name
-
     def clean_subject(self):
-
         subject = self.cleaned_data["subject"].strip()
-
         if len(subject) < 5:
-
             raise forms.ValidationError(
-
                 "موضوع خیلی کوتاه است."
-
             )
-
         return subject
-
     def clean_message(self):
-
         message = self.cleaned_data["message"].strip()
-
         if len(message) < 15:
-
             raise forms.ValidationError(
-
                 "متن پیام باید حداقل ۱۵ کاراکتر باشد."
-
             )
-
         return message
-
     def clean(self):
-
         cleaned_data = super().clean()
-
         email = cleaned_data.get("email")
-
         message = cleaned_data.get("message")
-
         if email and message:
-
             if email.lower() in message.lower():
-
                 raise forms.ValidationError(
-
                     "ایمیل را داخل متن پیام وارد نکنید."
-
                 )
-
         return cleaned_data
-
 # ==========================================================
 # ORDER FORM
 # ==========================================================
-
 class OrderForm(BaseStyledForm):
-
     phone = forms.CharField(
-
         label="شماره تماس",
-
         validators=[phone_validator],
-
         max_length=11,
-
     )
-
     class Meta:
-
         model = Order
-
         fields = [
-
             "service",
-
             "name",
-
             "email",
-
             "phone",
-
             "description",
-
             "attachment",
-
         ]
-
         widgets = {
-
             "service": forms.Select(),
-
             "name": forms.TextInput(
-
                 attrs={
-
+                    "class": "form-control",
                     "placeholder": "نام و نام خانوادگی",
-
                 }
-
             ),
-
             "email": forms.EmailInput(
-
                 attrs={
-
                     "placeholder": "example@email.com",
-
                 }
-
             ),
-
             "phone": forms.TextInput(
-
                 attrs={
-
                     "placeholder": "09123456789",
-
                 }
-
             ),
-
             "description": LargeTextarea(
-
                 attrs={
-
                     "placeholder": "توضیحات کامل پروژه",
-
                 }
-
             ),
-
         }
-
     def clean_service(self):
-
         service = self.cleaned_data["service"]
-
         if not service.is_active:
-
             raise forms.ValidationError(
-
                 "این سرویس در حال حاضر غیرفعال است."
-
             )
-
         return service
-
     def clean_description(self):
-
         description = self.cleaned_data["description"].strip()
-
         if len(description) < 20:
-
             raise forms.ValidationError(
-
                 "توضیحات پروژه باید حداقل ۲۰ کاراکتر باشد."
-
             )
-
         return description
-
     def clean_attachment(self):
-
         attachment = self.cleaned_data.get("attachment")
-
         if not attachment:
-
             return attachment
-
         if attachment.size > 20 * 1024 * 1024:
-
             raise forms.ValidationError(
-
                 "حداکثر حجم فایل ۲۰ مگابایت است."
-
             )
-
         allowed = [
-
             ".pdf",
-
             ".zip",
-
             ".rar",
-
             ".doc",
-
             ".docx",
-
             ".png",
-
             ".jpg",
-
             ".jpeg",
-
             ".webp",
-
         ]
-
         import os
-
         ext = os.path.splitext(
-
             attachment.name
-
         )[1].lower()
-
         if ext not in allowed:
-
             raise forms.ValidationError(
-
                 "فرمت فایل مجاز نیست."
-
             )
-
         return attachment
-
     def clean(self):
-
         cleaned_data = super().clean()
-
         service = cleaned_data.get("service")
-
         description = cleaned_data.get("description")
-
         if service and description:
-
             if len(description) < 30 and service.price > 1000000:
-
                 raise forms.ValidationError(
-
                     "برای این سرویس توضیحات کامل‌تری وارد کنید."
-
                 )
-
         return cleaned_data
-
 # ==========================================================
 # JOB APPLICATION FORM
 # ==========================================================
-
 class JobApplicationForm(BaseStyledForm):
-
     phone = forms.CharField(
-
         label="شماره تماس",
-
         validators=[phone_validator],
-
         max_length=11,
-
     )
-
     class Meta:
-
         model = JobApplication
-
         fields = [
-
             "full_name",
-
             "email",
-
             "phone",
-
             "position",
-
             "skills",
-
             "experience",
-
             "resume",
-
             "portfolio",
-
             "message",
-
         ]
-
         widgets = {
-
             "full_name": forms.TextInput(
-
                 attrs={
-
                     "placeholder": "نام و نام خانوادگی",
-
                 }
-
             ),
-
             "email": forms.EmailInput(
-
                 attrs={
-
                     "placeholder": "example@email.com",
-
                 }
-
             ),
-
             "phone": forms.TextInput(
-
                 attrs={
-
                     "placeholder": "09123456789",
-
                 }
-
             ),
-
             "position": forms.Select(),
-
             "skills": LargeTextarea(
-
                 attrs={
-
                     "rows": 3,
-
                     "placeholder": "مهارت‌های خود را بنویسید",
-
                 }
-
             ),
-
             "experience": LargeTextarea(
-
                 attrs={
-
                     "rows": 4,
 
                     "placeholder": "سوابق کاری",
